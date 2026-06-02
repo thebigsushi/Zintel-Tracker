@@ -1,0 +1,1464 @@
+[index.html.html](https://github.com/user-attachments/files/28528168/index.html.html)
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Zintel Creek Golf Tracker</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f6f2; --surface: #ffffff; --border: rgba(0,0,0,0.1); --border-mid: rgba(0,0,0,0.18);
+    --text: #1a1a18; --text-2: #5a5a55; --text-3: #9a9a93;
+    --green: #1D9E75; --green-bg: #E1F5EE; --green-text: #085041;
+    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
+    --red: #E24B4A; --red-bg: #FCEBEB; --red-text: #501313;
+    --blue: #185FA5; --blue-light: #B5D4F4; --blue-mid: #378ADD;
+    --radius: 8px; --radius-lg: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1a1a18; --surface:#242422; --border:rgba(255,255,255,0.1); --border-mid:rgba(255,255,255,0.18); --text:#f0efe9; --text-2:#a8a89f; --text-3:#68685f; --green-bg:#04342C; --green-text:#9FE1CB; --amber-bg:#412402; --amber-text:#FAC775; --red-bg:#501313; --red-text:#F7C1C1; }
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+  .header { margin-bottom: 20px; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header p { font-size: 13px; color: var(--text-2); margin-top: 3px; }
+  .nav { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+  .nav button { font-size: 12px; padding: 6px 10px; border-radius: var(--radius); border: 1px solid var(--border-mid); background: var(--surface); color: var(--text-2); cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 4px; }
+  .nav button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .nav button:hover:not(.active) { background: var(--border); }
+  .section { display: none; } .section.active { display: block; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 20px; margin-bottom: 12px; }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .metric { background: var(--bg); border-radius: var(--radius); padding: 12px 14px; border: 1px solid var(--border); }
+  .metric-label { font-size: 11px; color: var(--text-3); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .metric-value { font-size: 24px; font-weight: 600; color: var(--text); line-height: 1; }
+  .metric-sub { font-size: 11px; color: var(--text-3); margin-top: 4px; }
+  .section-label { font-size: 11px; font-weight: 600; color: var(--text-2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; }
+  .hole-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: 6px; }
+  .hole-cell { text-align: center; }
+  .hole-num { font-size: 10px; color: var(--text-3); padding: 2px 0; }
+  .hole-par { font-size: 10px; color: var(--text-3); margin-bottom: 3px; }
+  .hole-input { width: 100%; border: 1px solid var(--border-mid); border-radius: 4px; background: var(--surface); color: var(--text); font-size: 13px; text-align: center; padding: 6px 2px; transition: all 0.1s; }
+  .hole-input:focus { outline: none; border-color: var(--blue-mid); box-shadow: 0 0 0 2px rgba(55,138,221,0.15); }
+  .hole-input.eagle  { background:#9FE1CB; color:#04342C; border-color:#0F6E56; }
+  .hole-input.birdie { background:var(--green-bg); color:var(--green-text); border-color:var(--green); }
+  .hole-input.par    { background:var(--bg); color:var(--text-2); }
+  .hole-input.bogey  { background:var(--amber-bg); color:var(--amber-text); border-color:var(--amber); }
+  .hole-input.double { background:var(--red-bg); color:var(--red-text); border-color:var(--red); }
+  .form-row { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .form-row label { font-size: 13px; color: var(--text-2); min-width: 55px; }
+  .form-row input, .form-row select { font-size: 13px; border: 1px solid var(--border-mid); border-radius: var(--radius); background: var(--surface); color: var(--text); padding: 7px 10px; }
+  .form-row input:focus, .form-row select:focus { outline: none; border-color: var(--blue-mid); }
+  .nine-footer { display: flex; gap: 16px; padding-top: 8px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-2); margin-top: 4px; }
+  .score-summary { display: flex; gap: 16px; padding-top: 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .score-item { text-align: center; min-width: 48px; }
+  .score-item .val { font-size: 20px; font-weight: 600; color: var(--text); }
+  .score-item .lbl { font-size: 10px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
+  .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+  .btn-primary { background: var(--text); color: var(--bg); border: none; padding: 9px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .btn-primary:hover { opacity: 0.8; }
+  .btn-secondary { background: transparent; color: var(--text-2); border: 1px solid var(--border-mid); padding: 9px 16px; border-radius: var(--radius); font-size: 13px; cursor: pointer; }
+  .btn-secondary:hover { background: var(--bg); }
+  .btn-sm { font-size: 12px; padding: 5px 12px; border-radius: var(--radius); border: 1px solid var(--border-mid); background: transparent; color: var(--text-2); cursor: pointer; display: inline-flex; align-items: center; gap: 4px; }
+  .btn-sm:hover { background: var(--bg); }
+  .btn-sm.save { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .btn-sm.save:hover { opacity: 0.8; }
+  .btn-sm.danger { color: var(--red); border-color: var(--red); }
+  .btn-sm.danger:hover { background: var(--red-bg); }
+
+  /* History round rows */
+  .round-entry { border-bottom: 1px solid var(--border); }
+  .round-entry:last-child { border-bottom: none; }
+  .round-summary { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; cursor: pointer; gap: 8px; font-size: 13px; user-select: none; }
+  .round-summary:hover .round-date { color: var(--blue-mid); }
+  .round-meta { color: var(--text-3); font-size: 11px; margin-top: 2px; }
+  .round-expand { color: var(--text-3); font-size: 16px; transition: transform 0.2s; flex-shrink: 0; }
+  .round-expand.open { transform: rotate(180deg); }
+  .round-detail { display: none; padding-bottom: 12px; }
+  .round-detail.open { display: block; }
+
+  /* Scorecard in detail view */
+  .scorecard { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 10px; }
+  .scorecard th { font-size: 10px; color: var(--text-3); font-weight: 500; text-align: center; padding: 3px 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+  .scorecard td { text-align: center; padding: 4px 2px; }
+  .scorecard .hole-label { color: var(--text-3); font-size: 10px; }
+  .scorecard .par-row td { color: var(--text-3); font-size: 10px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  .scorecard .score-row td { font-weight: 500; }
+  .scorecard .total-col { font-weight: 600; color: var(--text); background: var(--bg); border-radius: 4px; }
+  .sc-eagle  { background:#9FE1CB; color:#04342C; border-radius:3px; }
+  .sc-birdie { background:var(--green-bg); color:var(--green-text); border-radius:3px; }
+  .sc-par    { background:var(--bg); color:var(--text-2); border-radius:3px; }
+  .sc-bogey  { background:var(--amber-bg); color:var(--amber-text); border-radius:3px; }
+  .sc-double { background:var(--red-bg); color:var(--red-text); border-radius:3px; }
+
+  /* Edit mode inputs inside scorecard */
+  .edit-input { width: 28px; border: 1px solid var(--border-mid); border-radius: 3px; background: var(--surface); color: var(--text); font-size: 12px; text-align: center; padding: 3px 1px; }
+  .edit-input:focus { outline: none; border-color: var(--blue-mid); }
+  .edit-input.eagle  { background:#9FE1CB; color:#04342C; border-color:#0F6E56; }
+  .edit-input.birdie { background:var(--green-bg); color:var(--green-text); border-color:var(--green); }
+  .edit-input.par    { background:var(--bg); color:var(--text-2); }
+  .edit-input.bogey  { background:var(--amber-bg); color:var(--amber-text); border-color:var(--amber); }
+  .edit-input.double { background:var(--red-bg); color:var(--red-text); border-color:var(--red); }
+
+  .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .detail-stats { display: flex; gap: 14px; font-size: 12px; color: var(--text-2); margin-bottom: 8px; flex-wrap: wrap; }
+  .detail-stats span strong { color: var(--text); }
+
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; }
+  .badge-green { background:var(--green-bg); color:var(--green-text); }
+  .badge-amber { background:var(--amber-bg); color:var(--amber-text); }
+  .badge-red   { background:var(--red-bg);   color:var(--red-text); }
+  .badge-gray  { background:var(--bg); color:var(--text-3); border:1px solid var(--border); }
+
+  .hole-perf-grid { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+  .hole-perf { text-align: center; }
+  .hole-perf-bar { height: 44px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 3px; }
+  .hole-perf-fill { width: 14px; border-radius: 3px 3px 0 0; min-height: 4px; }
+  .hole-perf-num { font-size: 10px; color: var(--text-2); }
+  .hole-perf-lbl { font-size: 9px; color: var(--text-3); }
+  .year-tab-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .year-tab { font-size: 12px; padding: 5px 12px; border-radius: var(--radius); border: 1px solid var(--border-mid); background: var(--surface); color: var(--text-2); cursor: pointer; }
+  .year-tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .year-stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-bottom: 12px; }
+  .empty-state { text-align: center; padding: 2rem; color: var(--text-3); font-size: 14px; }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.25s; pointer-events: none; z-index: 9999; white-space: nowrap; }
+  .toast.show { opacity: 1; }
+  .tee-time-btn { display: flex; align-items: center; gap: 8px; background: var(--green-bg); color: var(--green-text); border: 1px solid var(--green); padding: 10px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; text-decoration: none; width: fit-content; margin-top: 4px; }
+  .tee-time-btn:hover { opacity: 0.85; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>⛳ Zintel Creek Golf Tracker</h1>
+    <p>Kennewick, WA · Par 66 · Member app</p>
+  </div>
+  <div class="nav">
+    <button class="active" onclick="showSection('dashboard',this)"><i class="ti ti-chart-bar"></i> Dashboard</button>
+    <button onclick="showSection('log',this)"><i class="ti ti-plus"></i> Log Round</button>
+    <button onclick="showSection('history',this)"><i class="ti ti-calendar"></i> History</button>
+    <button onclick="showSection('holes',this)"><i class="ti ti-map"></i> Hole Stats</button>
+    <button onclick="showSection('years',this)"><i class="ti ti-trending-up"></i> Year Over Year</button>
+    <button onclick="showSection('teetime',this)"><i class="ti ti-info-circle"></i> Member Info</button>
+  </div>
+
+  <div id="dashboard" class="section active">
+    <div class="card" style="display:flex;align-items:center;gap:16px;padding:12px 20px;">
+      <div style="font-size:13px;color:var(--text-2);white-space:nowrap;">GHIN Handicap Index</div>
+      <input type="number" id="ghin-input" step="0.1" min="0" max="54" placeholder="Enter index" style="font-size:20px;font-weight:600;width:90px;border:none;border-bottom:1.5px solid var(--border-mid);background:transparent;color:var(--text);padding:2px 4px;text-align:center;" oninput="saveGhin(this.value)" />
+      <div style="font-size:11px;color:var(--text-3);">Updated manually from GHIN</div>
+    </div>
+    <div class="metric-grid" id="dash-metrics"></div>
+    <div class="card" id="dash-trend-card">
+      <div class="section-label">Handicap differential trend — full 18 rounds</div>
+      <div style="position:relative;height:130px;margin-top:8px;"><canvas id="trendChart" role="img" aria-label="Differential trend"></canvas></div>
+    </div>
+    <div class="card" id="dash-birdie-tracker"></div>
+    <div class="card" id="dash-recent"></div>
+  </div>
+
+  <div id="log" class="section">
+    <div class="card">
+      <div class="section-label" style="margin-bottom:12px;">Round details</div>
+      <div class="form-row"><label>Date</label><input type="date" id="round-date" /></div>
+      <div class="form-row"><label>Format</label>
+        <select id="round-format" onchange="updateLogFormat()">
+          <option value="18">Full 18 holes</option>
+          <option value="front">Front 9 only</option>
+          <option value="back">Back 9 only</option>
+          <option value="practice">Practice holes</option>
+          <option value="tournament">Tournament holes</option>
+          <option value="othercourse">Other Course</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Tees</label>
+        <select id="round-tee">
+          <option value="cannon">Cannon (Blue) — Rating 64.4 / Slope 119</option>
+          <option value="zintel" selected>Zintel (White) — Rating 63.5 / Slope 115</option>
+          <option value="legends">Legends (Red) — Rating 62.1 / Slope 110</option>
+        </select>
+      </div>
+    </div>
+    <div class="card" id="hole-count-card" style="display:none;">
+      <div class="section-label" style="margin-bottom:12px;" id="hole-count-label">Practice holes</div>
+      <div class="form-row"><label>Holes</label><input type="number" id="hole-count-input" min="1" max="18" placeholder="e.g. 4" style="font-size:16px;width:80px;" /></div>
+      <div id="new-course-check" style="display:none;margin-top:10px;display:flex;align-items:center;gap:8px;"><input type="checkbox" id="is-new-course" style="width:14px;height:14px;cursor:pointer;" /><label for="is-new-course" style="font-size:13px;color:var(--text-2);cursor:pointer;">New course (counts toward new courses goal)</label></div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:8px;">These holes will be added to your total holes played only — no stats recorded.</div>
+    </div>
+    <div class="card">
+      <div class="section-label">Front nine</div>
+      <div class="hole-grid" id="front-grid"></div>
+      <div class="nine-footer"><span>Out: <strong id="front-total">—</strong></span><span>Par 33</span><span id="front-diff" style="color:var(--text-3)"></span></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Back nine</div>
+      <div class="hole-grid" id="back-grid"></div>
+      <div class="nine-footer"><span>In: <strong id="back-total">—</strong></span><span>Par 33</span><span id="back-diff" style="color:var(--text-3)"></span></div>
+    </div>
+    <div class="card">
+      <div class="score-summary">
+        <div class="score-item"><div class="val" id="log-total">—</div><div class="lbl">Total</div></div>
+        <div class="score-item"><div class="val" id="log-vs-par">—</div><div class="lbl">vs par</div></div>
+        <div class="score-item"><div class="val" id="log-birdies">0</div><div class="lbl">Birdies</div></div>
+        <div class="score-item"><div class="val" id="log-pars">0</div><div class="lbl">Pars</div></div>
+        <div class="score-item"><div class="val" id="log-doubles">0</div><div class="lbl">Doubles+</div></div>
+        <div class="score-item"><div class="val" id="log-hdcp">—</div><div class="lbl">Diff</div></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-primary" onclick="saveRound()">Save round</button>
+      <button class="btn-secondary" onclick="clearLog()">Clear</button>
+    </div>
+  </div>
+
+  <div id="history" class="section">
+    <div class="year-tab-row" id="history-year-tabs"></div>
+    <div class="card" id="history-list"></div>
+  </div>
+
+  <div id="holes" class="section">
+    <div class="year-tab-row" id="hole-year-tabs"></div>
+    <div class="card">
+      <div class="section-label" style="margin-bottom:12px;" id="hole-card-label">Average score per hole vs par (full 18 rounds)</div>
+      <div class="hole-perf-grid" id="hole-perf-front" style="margin-bottom:12px;"></div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);">Holes 1–9</div>
+      <div class="hole-perf-grid" id="hole-perf-back"></div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px;">Holes 10–18</div>
+    </div>
+    <div class="card" id="vs-prev-bars" style="display:none;"></div>
+    <div class="card" id="vs-prev-partype" style="display:none;"></div>
+    <div class="card" id="vs-prev-movers" style="display:none;"></div>
+    <div class="card" id="par-type-stats"></div>
+    <div class="card" id="hardest-holes"></div>
+    <div class="card" id="easiest-holes"></div>
+  </div>
+
+  <div id="years" class="section">
+    <div class="year-tab-row" id="year-tabs"></div>
+    <div class="year-stat-grid" id="year-stats-grid"></div>
+    <div class="card" id="year-birdie-tracker" style="display:none;"></div>
+    <div class="card" id="year-trend-charts" style="display:none;"></div>
+  </div>
+
+  <div id="teetime" class="section">
+    <div class="card">
+      <div class="section-label" style="margin-bottom:10px;">Book a tee time</div>
+      <p style="font-size:14px;color:var(--text-2);margin-bottom:16px;line-height:1.6;">Tee times are managed through the Zintel Creek member portal. Click below to open it and book your next round.</p>
+      <a class="tee-time-btn" href="https://customer-cc20.clubcaddie.com/login?clubid=103483" target="_blank"><i class="ti ti-external-link"></i> Open member portal</a>
+      <p style="font-size:12px;color:var(--text-3);margin-top:14px;">Members can book up to 2 weeks in advance. Questions? Call the pro shop at (509) 783-6014.</p>
+    </div>
+    <div class="card">
+      <div class="section-label" style="margin-bottom:8px;">Course info</div>
+      <div style="font-size:13px;color:var(--text-2);display:flex;flex-direction:column;gap:8px;">
+        <div><strong style="color:var(--text);">Address</strong> &nbsp; 314 N Underwood St, Kennewick, WA 99336</div>
+        <div><strong style="color:var(--text);">Phone</strong> &nbsp; (509) 783-6014</div>
+        <div><strong style="color:var(--text);">Website</strong> &nbsp; <a href="https://www.zintelcreekgolfclub.com" target="_blank" style="color:var(--blue-mid);">zintelcreekgolfclub.com</a></div>
+        <div><strong style="color:var(--text);">Par</strong> &nbsp; 66 · 4,945 yards (Blue)</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-label" style="margin-bottom:12px;">2026 Season Goals</div>
+
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;">General goals</div>
+      <div id="general-goals-list" style="margin-bottom:16px;"></div>
+
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.04em;">Hole stats color goals — 2026</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:10px;">Green = at or below goal · Yellow = slightly over · Red = above threshold</div>
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="border-bottom:1px solid var(--border);">
+              <th style="text-align:left;padding:6px 8px;color:var(--text-3);font-weight:500;">Par type</th>
+              <th style="text-align:center;padding:6px 8px;color:var(--green);font-weight:500;">🟢 Green</th>
+              <th style="text-align:center;padding:6px 8px;color:var(--amber);font-weight:500;">🟡 Yellow</th>
+              <th style="text-align:center;padding:6px 8px;color:var(--red);font-weight:500;">🔴 Red</th>
+            </tr>
+          </thead>
+          <tbody id="goals-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const PARS = [4,3,3,4,4,3,5,3,4, 3,4,4,3,3,3,4,4,5];
+const TOTAL_PAR = 66;
+const TEES = {
+  cannon: { name:'Cannon (Blue)', rating:64.4, slope:119 },
+  zintel:  { name:'Zintel (White)', rating:63.5, slope:115 },
+  legends: { name:'Legends (Red)', rating:62.1, slope:110 }
+};
+
+
+const GOALS = {
+  '2020': {
+    3: { green: 1.17, yellow: 1.25 },
+    4: { green: 1.44, yellow: 1.51 },
+    5: { green: 1.65, yellow: 1.72 }
+  },
+  '2022': {
+    3: { green: 0.86, yellow: 0.91 },
+    4: { green: 0.95, yellow: 1.00 },
+    5: { green: 0.75, yellow: 0.80 }
+  },
+  '2021': {
+    3: { green: 0.97, yellow: 1.03 },
+    4: { green: 0.99, yellow: 1.05 },
+    5: { green: 1.07, yellow: 1.11 }
+  },
+  '2023': {
+    3: { green: 0.88, yellow: 0.92 },
+    4: { green: 0.98, yellow: 1.02 },
+    5: { green: 0.90, yellow: 0.94 }
+  },
+  '2024': {
+    3: { green: 0.77, yellow: 0.82 },
+    4: { green: 0.76, yellow: 0.81 },
+    5: { green: 0.62, yellow: 0.67 }
+  },
+  '2025': {
+    3: { green: 0.61, yellow: 0.65 },
+    4: { green: 0.65, yellow: 0.69 },
+    5: { green: 0.37, yellow: 0.40 }
+  },
+  '2026': {
+    3: { green: 0.55, yellow: 0.60 },
+    4: { green: 0.62, yellow: 0.65 },
+    5: { green: 0.35, yellow: 0.37 }
+  }
+};
+
+function goalColor(diff, par, year) {
+  if (year === 'all') return '#378ADD';
+  const g = GOALS[year];
+  if (!g || !g[par]) return '#888780';
+  if (diff <= g[par].green) return '#1D9E75';
+  if (diff <= g[par].yellow) return '#BA7517';
+  return '#E24B4A';
+}
+
+const HARDCODED = [
+  // 2025 chunk 2 — Jun 1 through Jul 20
+  ['2025-06-01','zintel', 5,3,3,4,5,4,6,4,6, 3,5,4,4,3,4,4,4,4],
+  ['2025-06-02','zintel', 4,2,4,4,4,3,7,2,5, null,null,null,null,null,null,null,null,null],
+  ['2025-06-05','zintel', null,null,null,null,null,null,null,null,null, 4,5,4,4,2,4,4,4,5],
+  ['2025-06-06','zintel', 2,4,3,4,4,3,6,3,6, 3,5,5,4,5,3,3,6,4],
+  ['2025-06-08','zintel', 4,4,4,5,4,4,6,3,5, 4,5,5,3,4,3,4,4,6],
+  ['2025-06-12','zintel', 4,5,3,5,5,3,5,4,4, null,null,null,null,null,null,null,null,null],
+  ['2025-06-13','zintel', 4,4,4,5,5,4,6,3,5, null,null,null,null,null,null,null,null,null],
+  ['2025-06-14','zintel', 5,3,4,4,5,4,null,null,null, null,null,null,null,null,null,null,null,null],
+  ['2025-06-15','zintel', 5,3,3,4,4,2,5,4,7, 4,4,7,3,2,3,3,4,5],
+  ['2025-06-19','zintel', null,null,null,null,null,null,null,null,null, 4,5,4,5,3,2,5,5,5],
+  ['2025-06-20','zintel', 4,3,4,3,4,3,6,6,5, 3,4,5,null,null,null,null,null,null],
+  ['2025-06-22','zintel', 4,3,3,4,5,5,6,5,5, 5,4,5,3,3,4,4,5,4],
+  ['2025-06-26','zintel', 4,3,4,4,6,4,5,4,7, null,null,null,null,null,null,null,null,null],
+  ['2025-06-27','zintel', 5,3,3,5,4,3,7,5,4, 3,5,4,5,3,5,5,4,5],
+  ['2025-06-29','zintel', 6,3,3,4,4,3,5,4,6, null,null,null,null,null,null,null,null,null],
+  ['2025-07-03','zintel', null,null,null,null,null,null,null,null,null, 3,5,7,3,5,3,3,6,4],
+  ['2025-07-10','zintel', 5,3,4,4,5,2,6,5,5, null,null,null,null,null,null,null,null,null],
+  ['2025-07-11','zintel', 3,3,4,5,4,3,5,3,6, 5,5,6,5,2,3,5,4,6],
+  ['2025-07-13','zintel', 4,3,4,3,3,3,5,4,4, 3,4,5,3,3,3,3,5,6],
+  ['2025-07-16','zintel', 5,3,4,4,4,4,5,4,6, null,null,null,null,null,null,null,null,null],
+  ['2025-07-17','zintel', null,null,null,null,null,null,null,null,null, 5,5,4,3,3,3,4,4,6],
+  ['2025-07-18','zintel', 6,3,3,3,4,4,7,2,5, 4,5,4,3,4,3,4,5,6],
+  ['2025-07-20','zintel', 5,4,3,7,3,3,6,4,5, 4,5,5,3,3,3,4,5,6],
+  // 2025 chunk 3 — Jul 24 through Dec 21
+  ['2025-07-24','zintel', 4,4,2,4,4,3,6,4,5, 4,5,5,3,3,5,5,5,5],
+  ['2025-07-24','zintel', 4,5,7,4,5,5,4,5,4, null,null,null,null,null,null,null,null,null],
+  ['2025-07-25','zintel', 4,3,5,4,4,4,5,4,4, 4,4,6,3,3,4,4,5,5],
+  ['2025-07-28','zintel', 4,3,3,4,4,3,6,3,5, 4,4,5,4,5,3,4,5,4],
+  ['2025-07-31','zintel', 3,5,4,5,5,4,5,3,7, null,null,null,null,null,null,null,null,null],
+  ['2025-08-01','zintel', 4,5,3,3,3,3,5,4,5, 4,4,3,3,3,3,5,5,5],
+  ['2025-08-03','zintel', 5,3,4,4,6,4,6,3,6, 3,5,4,3,3,4,5,4,4],
+  ['2025-08-07','zintel', null,null,null,null,null,null,null,null,null, 3,6,5,3,3,4,4,4,5],
+  ['2025-08-10','zintel', 4,4,4,4,4,3,6,3,4, 2,4,5,2,3,4,4,5,6],
+  ['2025-08-14','zintel', 4,3,3,4,5,3,5,4,5, null,null,null,null,null,null,null,null,null],
+  ['2025-08-16','zintel', null,null,null,null,null,null,null,null,null, 4,6,5,null,null,null,null,null,null],
+  ['2025-08-21','zintel', 4,3,4,5,5,3,5,3,4, null,null,null,null,null,null,null,null,null],
+  ['2025-08-22','zintel', 4,4,3,4,4,4,5,4,4, 3,5,4,3,3,4,5,5,5],
+  ['2025-08-23','zintel', 4,4,6,4,4,3,5,3,4, 3,4,5,4,3,4,4,4,5],
+  ['2025-08-30','zintel', 5,3,5,4,3,3,6,3,5, 4,4,4,5,4,4,4,4,5],
+  ['2025-08-31','zintel', 4,3,4,4,4,3,5,3,4, 4,6,4,3,3,3,4,4,5],
+  ['2025-09-01','zintel', 5,3,3,4,5,4,5,2,5, 3,4,4,3,3,4,6,4,6],
+  ['2025-09-07','zintel', 4,3,4,5,5,3,6,6,5, null,null,null,null,null,null,null,null,null],
+  ['2025-09-13','zintel', 4,3,4,5,5,3,6,4,6, 4,6,4,4,4,3,4,5,6],
+  ['2025-09-20','zintel', 4,4,3,4,5,4,4,3,5, null,null,null,null,null,null,null,null,null],
+  ['2025-09-25','zintel', 4,4,4,4,5,3,5,4,6, null,null,null,null,null,null,null,null,null],
+  ['2025-09-27','zintel', 4,3,4,6,4,3,6,3,4, 3,7,6,4,3,4,5,6,5],
+  ['2025-09-28','zintel', 4,3,5,4,4,3,5,3,4, 4,4,5,3,3,3,5,4,6],
+  ['2025-11-27','zintel', 5,4,4,5,4,3,7,3,5, null,null,null,null,null,null,null,null,null],
+  ['2025-11-28','zintel', 5,4,5,7,5,3,6,3,5, 3,5,5,4,4,3,5,6,5],
+  ['2025-12-06','zintel', 4,4,5,5,4,4,5,3,6, 4,3,5,3,6,3,4,6,5],
+  ['2025-12-07','zintel', 5,4,3,4,6,4,5,3,5, 5,5,4,3,5,4,5,5,4],
+  ['2025-12-13','zintel', 5,3,3,3,4,2,5,3,5, 3,5,5,3,3,3,4,4,4],
+  ['2025-12-14','zintel', 4,4,4,5,5,4,5,3,4, 4,6,4,4,4,4,5,5,8],
+  ['2025-12-20','zintel', 4,3,4,4,5,7,6,3,5, 4,5,4,null,null,null,null,null,null],
+  ['2025-12-21','zintel', 5,4,3,4,5,6,4,5,4, 4,4,5,4,3,4,3,5,5],
+  // 2024 chunk 2 — May 23 through Nov 24
+  ['2024-05-23','zintel', 4,4,4,4,4,3,4,3,3, null,null,null,null,null,null,null,null,null],
+  ['2024-05-24','zintel', 5,4,3,4,4,4,6,4,5, 3,5,6,3,4,3,4,6,6],
+  ['2024-05-24','zintel', 6,4,4,4,5,3,6,2,5, null,null,null,null,null,null,null,null,null],
+  ['2024-05-27','zintel', 5,3,4,5,4,6,7,2,4, 5,5,5,2,4,3,4,3,4],
+  ['2024-05-30','zintel', 4,5,5,5,5,3,7,4,5, null,null,null,null,null,null,null,null,null],
+  ['2024-05-31','zintel', 6,3,3,5,6,4,5,4,6, 5,4,5,4,3,4,4,5,8],
+  ['2024-06-06','zintel', null,null,null,null,null,null,null,null,null, 3,6,4,5,4,4,5,5,5],
+  ['2024-06-07','zintel', 4,3,3,5,5,5,6,6,5, 4,5,5,4,4,3,5,4,5],
+  ['2024-06-13','zintel', 4,3,4,3,6,6,5,3,4, null,null,null,null,null,null,null,null,null],
+  ['2024-06-16','zintel', 5,3,4,4,6,4,5,3,7, 6,5,5,4,4,3,6,4,7],
+  ['2024-06-20','zintel', null,null,null,null,null,null,null,null,null, 4,4,6,3,3,6,3,5,6],
+  ['2024-06-23','zintel', 5,4,4,5,6,4,7,4,7, 5,5,4,4,4,6,5,4,8],
+  ['2024-06-27','zintel', 4,4,3,4,4,3,7,4,5, null,null,null,null,null,null,null,null,null],
+  ['2024-06-28','zintel', 5,5,5,4,5,4,5,3,5, 6,4,5,4,3,5,4,5,5],
+  ['2024-06-30','zintel', 4,3,4,3,4,4,5,2,5, 3,5,5,6,4,4,5,7,5],
+  ['2024-07-04','zintel', 5,3,5,4,4,4,6,4,6, 3,4,6,5,3,3,4,5,5],
+  ['2024-07-05','zintel', 4,3,4,4,5,4,5,3,6, 5,4,4,3,3,3,4,3,8],
+  ['2024-07-07','zintel', 4,2,4,4,5,3,7,3,6, 6,4,7,3,3,3,7,3,6],
+  ['2024-07-11','zintel', null,null,null,null,null,null,null,null,null, 4,6,5,4,4,5,3,4,5],
+  ['2024-07-12','zintel', 4,2,5,4,3,5,5,4,4, 4,6,5,3,2,5,4,4,4],
+  ['2024-07-12','zintel', 4,3,5,4,5,4,6,2,5, 5,5,4,3,3,3,4,5,7],
+  ['2024-07-18','zintel', 4,4,3,4,4,4,6,3,6, null,null,null,null,null,null,null,null,null],
+  ['2024-07-19','zintel', 4,2,4,4,4,4,7,3,4, 4,5,4,3,4,6,5,4,5],
+  ['2024-07-25','zintel', null,null,null,null,null,null,null,null,null, 3,4,5,2,4,4,4,5,7],
+  ['2024-07-26','zintel', 5,5,3,5,5,3,5,3,5, 3,4,6,3,5,5,4,3,5],
+  ['2024-07-28','zintel', 4,6,4,6,5,7,8,4,7, 4,5,5,4,3,5,4,4,6],
+  ['2024-08-01','zintel', 3,4,4,4,5,4,6,4,7, null,null,null,null,null,null,null,null,null],
+  ['2024-08-03','zintel', 4,3,4,4,4,3,6,4,6, 5,3,5,3,3,4,5,4,4],
+  ['2024-08-25','zintel', 4,4,3,4,4,5,6,4,4, 4,5,4,3,3,3,5,4,6],
+  ['2024-08-30','zintel', 5,3,3,4,5,4,5,3,3, 4,5,5,3,5,5,5,5,5],
+  ['2024-09-07','zintel', 4,4,4,4,5,4,6,4,4, 4,6,5,4,3,5,5,5,4],
+  ['2024-10-16','zintel', 3,3,4,4,6,4,5,4,4, 4,7,7,3,4,3,5,5,6],
+  ['2024-10-18','zintel', 4,5,4,5,3,4,4,2,5, 3,6,5,4,4,4,7,7,7],
+  ['2024-10-19','zintel', 5,3,4,6,5,4,6,4,6, null,null,null,null,null,null,null,null,null],
+  ['2024-11-24','zintel', 4,4,5,4,4,3,6,3,6, 5,6,6,4,3,4,4,6,7],
+  // 2020 data
+  ['2020-01-03','zintel', 7,3,5,5,5,5,6,5,6, 4,6,5,5,4,5,6,7,6],
+  ['2020-01-31','zintel', 5,5,4,7,7,4,6,4,7, 4,5,7,4,3,3,5,6,6],
+  ['2020-02-28','zintel', 6,4,5,5,6,5,7,3,5, 5,5,6,4,5,4,6,5,8],
+  ['2020-05-08','zintel', 7,4,5,4,4,3,7,5,6, 4,6,6,3,4,6,6,6,6],
+  ['2020-05-31','zintel', 6,6,4,5,4,4,9,4,6, 3,4,7,3,5,5,6,7,7],
+  ['2020-06-05','zintel', 5,5,5,6,5,3,5,3,6, 5,4,6,4,4,4,4,7,6],
+  ['2020-06-06','zintel', 7,6,5,6,5,5,9,7,6, 3,6,6,4,5,6,6,8,5],
+  ['2020-06-13','zintel', 5,4,5,3,6,4,6,6,4, 5,4,6,4,4,3,6,5,5],
+  ['2020-06-20','zintel', 7,3,5,4,3,4,8,5,7, 4,5,5,3,4,5,5,5,6],
+  ['2020-06-20','zintel', 6,7,6,5,7,4,7,3,8, 4,6,5,4,4,3,5,6,7],
+  ['2020-06-28','zintel', 4,4,5,4,7,4,7,4,8, 4,5,5,5,3,3,6,7,5],
+  ['2020-07-03','zintel', 5,5,4,4,5,5,6,5,5, 4,4,5,4,5,4,5,4,8],
+  ['2020-07-10','zintel', 6,4,4,4,5,5,6,4,8, 4,6,8,4,3,4,6,6,6],
+  ['2020-07-17','zintel', 5,2,4,5,5,4,8,5,8, 5,6,5,5,4,3,5,5,6],
+  ['2020-07-24','zintel', 6,5,4,5,5,4,8,5,8, 4,4,6,4,4,4,5,5,6],
+  ['2020-07-31','zintel', 4,3,5,6,6,5,7,3,5, 5,4,5,3,3,4,5,5,7],
+  ['2020-08-03','zintel', 6,4,3,6,5,4,6,5,7, 3,5,6,4,4,4,5,7,6],
+  ['2020-08-14','zintel', 4,5,5,4,5,5,7,4,5, 4,6,6,4,4,5,5,6,8],
+  ['2020-08-28','zintel', 4,4,7,4,6,4,6,4,5, 5,6,3,4,3,4,7,7,6],
+  ['2020-09-04','zintel', 6,4,3,6,5,4,6,5,7, 3,5,6,4,4,4,5,7,6],
+  ['2020-09-04','zintel', 6,4,5,6,5,4,6,4,7, 5,5,6,3,6,4,5,6,5],
+  ['2020-09-11','zintel', 7,3,5,6,6,5,7,5,5, 5,4,8,2,3,4,5,4,5],
+  ['2020-09-22','zintel', 5,4,5,4,5,5,7,3,5, 4,5,4,3,5,3,5,4,5],
+  ['2020-10-02','zintel', 5,4,4,4,6,3,6,3,5, 5,7,5,4,3,3,4,8,5],
+  ['2020-10-03','zintel', 5,4,3,5,7,4,5,6,5, 4,6,4,4,4,4,5,6,8],
+  ['2020-10-09','zintel', 5,4,5,4,5,4,7,2,6, 3,5,6,4,4,4,6,5,7],
+  ['2020-10-16','zintel', 5,6,5,5,4,4,6,3,5, 4,5,6,4,4,6,5,3,8],
+  ['2020-10-23','zintel', 4,4,4,5,6,3,7,4,3, 4,5,8,4,5,5,5,6,4],
+  ['2020-11-25','zintel', 4,3,6,5,7,4,8,4,5, 5,4,6,4,4,4,5,4,6],
+  ['2020-11-28','zintel', 6,3,4,5,4,4,6,5,5, 3,6,4,4,6,5,4,4,5],
+  ['2020-12-11','zintel', 6,5,4,6,6,6,7,3,5, 4,5,6,4,3,5,5,6,5],
+  ['2020-12-18','zintel', 4,4,4,5,6,5,6,4,5, 5,5,4,3,4,4,4,7,6],
+  ['2020-12-21','zintel', 7,2,4,8,5,5,7,5,6, 4,5,6,3,4,4,4,6,8],
+  ['2020-12-22','zintel', 6,4,4,4,4,4,7,5,6, 3,5,7,4,4,4,4,6,6],
+  // 2021 data
+  ['2021-01-15','zintel', 5,4,4,6,4,3,6,4,7, 5,5,6,6,3,4,4,4,4],
+  ['2021-01-29','zintel', 4,4,3,4,4,2,4,3,7, 3,5,7,1,3,8,6,6,7],
+  ['2021-03-05','zintel', 4,6,3,5,6,4,6,5,6, 4,6,6,5,5,5,4,8,7],
+  ['2021-03-05','zintel', 7,3,3,5,6,4,7,4,6, 5,4,5,5,4,3,6,6,6],
+  ['2021-03-13','zintel', 5,4,3,6,4,3,7,4,5, 4,5,6,3,4,3,4,7,6],
+  ['2021-03-27','zintel', 3,3,4,5,5,5,6,4,5, 4,4,5,4,5,5,5,3,6],
+  ['2021-03-27','zintel', 4,4,6,4,5,4,8,3,7, 5,5,4,4,4,4,4,4,6],
+  ['2021-04-02','zintel', 5,4,4,6,6,4,5,4,5, 3,6,5,5,4,4,6,4,4],
+  ['2021-04-09','zintel', 6,5,3,5,5,3,7,4,5, 4,4,6,3,5,5,5,3,5],
+  ['2021-04-23','zintel', 6,4,4,4,4,4,9,3,5, 4,6,4,4,4,4,4,4,5],
+  ['2021-04-23','zintel', 4,3,5,5,5,3,5,4,5, 5,6,6,4,3,4,5,5,5],
+  ['2021-05-07','zintel', 4,4,5,5,5,3,6,4,5, 4,6,4,4,5,5,7,4,5],
+  ['2021-06-04','zintel', 3,4,5,5,4,3,7,5,5, 4,5,4,4,6,4,4,4,6],
+  ['2021-07-02','zintel', 4,4,3,5,4,3,7,3,5, 3,4,4,5,4,4,4,4,5],
+  ['2021-07-09','zintel', 4,4,4,6,5,4,6,4,6, 4,5,7,3,6,4,4,5,6],
+  ['2021-07-16','zintel', 4,3,3,4,6,4,7,4,5, 5,4,6,4,3,3,4,6,6],
+  ['2021-07-30','zintel', 5,4,3,8,4,2,7,4,5, 4,4,4,4,5,5,4,6,5],
+  ['2021-08-13','zintel', 4,4,4,3,6,3,7,3,4, 6,4,5,4,3,4,5,9,5],
+  ['2021-08-20','zintel', 5,3,5,5,5,3,6,5,3, 4,4,5,4,3,3,5,7,5],
+  ['2021-09-03','zintel', 6,4,3,4,5,4,8,4,4, 4,5,5,5,5,3,4,6,9],
+  ['2021-10-01','zintel', 5,3,4,4,6,5,8,3,7, 4,5,4,4,3,3,8,5,5],
+  ['2021-10-02','zintel', 6,5,3,4,5,3,5,3,5, 4,3,5,3,4,5,5,4,5],
+  ['2021-10-06','zintel', 4,2,3,6,6,3,7,4,6, 5,5,5,4,4,3,5,6,5],
+  ['2021-10-06','zintel', 5,4,4,5,5,3,6,4,7, 4,4,6,3,4,5,4,5,6],
+  ['2021-10-16','zintel', 5,6,4,4,4,4,6,4,6, 5,6,5,5,5,5,4,7,3],
+  // 2022 data
+  ['2022-03-05','zintel', 6,4,3,4,5,5,6,6,6, 4,5,5,4,4,5,6,6,7],
+  ['2022-03-19','zintel', 3,3,5,7,4,3,5,4,7, 3,4,5,4,5,6,8,5,5],
+  ['2022-06-03','zintel', 5,3,4,5,6,4,5,4,6, 4,5,4,4,4,5,5,4,6],
+  ['2022-06-19','zintel', 4,3,4,5,6,3,7,4,6, 4,5,5,6,3,3,4,5,5],
+  ['2022-07-02','zintel', 6,4,5,5,5,4,4,5,5, 5,5,4,3,3,5,4,3,4],
+  ['2022-07-04','zintel', 5,3,6,4,5,4,6,4,7, 3,5,8,3,3,3,5,8,6],
+  ['2022-07-15','zintel', 4,4,4,5,7,4,4,3,5, 3,4,5,3,4,6,3,5,6],
+  ['2022-07-23','zintel', 5,4,4,4,4,4,5,3,6, 3,4,6,4,3,3,4,3,5],
+  ['2022-08-12','zintel', 5,4,4,4,3,5,6,3,4, 4,5,5,3,4,3,4,5,5],
+  ['2022-08-14','zintel', 5,3,4,4,4,4,8,4,6, 4,6,6,4,4,5,4,5,5],
+  ['2022-09-04','zintel', 4,2,3,4,3,3,5,4,6, 2,6,8,3,5,5,6,5,9],
+  ['2022-09-18','zintel', 5,3,4,5,5,4,7,3,6, 3,5,6,4,4,3,5,5,6],
+  ['2022-10-15','zintel', 6,3,4,5,4,4,8,3,4, 4,4,5,6,3,4,4,3,7],
+  ['2022-10-22','zintel', 4,6,5,5,5,3,5,5,7, 3,4,4,4,4,3,4,3,4],
+  // 2023 data
+  ['2023-01-13','zintel', 4,5,5,5,4,5,5,3,5, 5,4,6,3,3,4,4,8,4],
+  ['2023-02-04','zintel', 5,3,4,4,4,3,5,5,4, 3,4,5,4,5,5,5,4,6],
+  ['2023-03-05','zintel', 6,6,4,4,5,5,7,3,6, 5,5,5,3,5,3,5,4,6],
+  ['2023-03-11','zintel', 5,3,3,5,5,5,6,4,5, null,null,null,null,null,null,null,null,null],
+  ['2023-03-17','zintel', 5,3,4,6,5,3,7,5,5, 3,4,6,4,4,4,6,3,6],
+  ['2023-04-08','zintel', 4,4,4,5,5,4,7,4,4, 3,4,5,4,5,4,4,4,6],
+  ['2023-04-15','zintel', 5,4,4,7,4,5,6,3,5, null,null,null,null,null,null,null,null,null],
+  ['2023-04-16','zintel', 4,4,4,6,5,4,6,4,4, 4,5,6,4,4,6,5,8,5],
+  ['2023-05-05','zintel', 5,3,4,4,6,2,9,4,9, 5,5,4,4,3,4,4,4,5],
+  ['2023-05-12','zintel', 4,3,3,5,4,3,6,3,4, 3,7,5,5,2,3,7,5,6],
+  ['2023-05-19','zintel', 8,4,3,6,4,3,8,4,8, 4,5,6,2,4,4,5,5,7],
+  ['2023-05-26','zintel', 4,5,4,5,5,3,6,5,6, 4,4,7,4,3,3,5,6,7],
+  ['2023-05-27','zintel', 7,5,4,6,4,4,5,4,6, 5,5,4,3,5,4,4,4,7],
+  ['2023-06-02','zintel', 5,5,3,5,4,4,7,3,5, 5,4,5,4,4,4,3,5,7],
+  ['2023-06-18','zintel', 4,3,4,5,5,4,6,3,6, 4,5,8,3,3,3,7,3,6],
+  ['2023-06-30','zintel', 3,4,5,7,5,3,8,4,6, 3,5,4,5,5,2,4,5,5],
+  ['2023-07-09','zintel', 5,3,4,6,5,2,6,4,5, 4,6,4,4,4,3,4,5,6],
+  ['2023-07-14','zintel', 4,3,3,4,4,4,5,4,6, 4,6,6,3,4,5,4,4,4],
+  ['2023-08-11','zintel', 4,4,4,5,5,2,6,4,5, 4,3,5,4,4,5,5,4,4],
+  ['2023-08-25','zintel', 4,3,3,5,5,3,5,3,6, 3,4,5,3,3,3,4,5,5],
+  ['2023-09-01','zintel', 7,3,5,4,4,3,5,6,5, 5,4,5,3,5,3,7,7,4],
+  ['2023-09-23','zintel', 3,4,3,7,4,4,5,3,6, 6,4,5,3,2,5,5,4,5],
+  ['2023-10-08','zintel', 6,5,4,5,6,6,5,4,4, 4,7,5,4,4,4,4,5,4],
+  ['2023-10-27','zintel', 5,4,4,5,4,4,8,3,5, 4,7,6,7,5,5,3,5,6],
+  ['2023-12-30','zintel', 5,5,5,4,4,3,6,4,5, 4,5,4,4,4,4,5,7,7],
+  // 2024 chunk 1 — Feb through May 16
+  ['2024-02-03','zintel', 6,3,4,4,5,4,5,4,6, 3,4,7,4,4,4,6,5,5],
+  ['2024-02-10','zintel', 7,3,4,6,5,4,5,5,6, 4,5,4,3,3,2,5,5,5],
+  ['2024-02-23','zintel', 5,3,3,4,5,3,5,4,5, null,null,null,null,null,null,null,null,null],
+  ['2024-02-25','zintel', 6,4,3,5,5,4,5,6,5, 4,4,5,4,3,5,5,4,6],
+  ['2024-03-02','zintel', 5,3,3,5,8,3,6,4,6, 4,4,5,3,4,4,5,4,5],
+  ['2024-03-03','zintel', 5,3,4,4,4,4,5,3,4, null,null,null,null,null,null,null,null,null],
+  ['2024-03-04','zintel', null,null,null,null,null,null,null,null,null, 5,4,5,4,4,5,4,5,4],
+  ['2024-03-08','zintel', 5,3,5,5,5,4,6,3,5, 4,5,6,3,2,5,6,3,6],
+  ['2024-03-09','zintel', 5,4,4,4,5,4,7,3,5, null,null,null,null,null,null,null,null,null],
+  ['2024-03-10','zintel', 4,3,3,4,5,2,5,3,5, 3,5,5,4,5,3,4,4,6],
+  ['2024-03-13','zintel', 5,4,4,4,4,3,6,5,4, null,null,null,null,null,null,null,null,null],
+  ['2024-03-15','zintel', 4,4,7,5,6,5,7,6,7, 3,4,4,3,3,3,4,5,5],
+  ['2024-03-17','zintel', 6,4,5,5,6,3,5,3,4, 4,3,6,4,5,3,4,6,7],
+  ['2024-03-18','zintel', null,null,null,null,null,null,null,null,null, 3,3,4,3,4,4,5,6,6],
+  ['2024-03-20','zintel', 5,4,4,4,5,3,5,4,6, 4,4,6,null,null,null,null,null,null],
+  ['2024-03-22','zintel', 5,3,4,7,6,5,6,4,4, 4,4,7,3,3,3,5,4,5],
+  ['2024-03-24','zintel', 4,3,3,5,4,4,6,4,4, null,null,null,null,null,null,null,null,null],
+  ['2024-03-25','zintel', 4,3,5,5,5,3,5,4,5, null,null,null,null,null,null,null,null,null],
+  ['2024-03-29','zintel', 6,3,2,4,5,4,6,4,5, 3,5,6,3,5,5,4,4,6],
+  ['2024-03-29','zintel', 5,5,3,4,6,4,5,3,6, 2,4,5,5,3,4,5,5,4],
+  ['2024-03-29','zintel', 6,3,4,4,4,4,5,3,4, null,null,null,null,null,null,null,null,null],
+  ['2024-03-31','zintel', 5,6,4,4,6,3,6,3,5, 4,5,4,4,3,3,3,5,6],
+  ['2024-04-01','zintel', 5,3,4,3,5,4,6,3,6, null,null,null,null,null,null,null,null,null],
+  ['2024-04-02','zintel', 4,4,null,null,5,3,5,4,6, 4,null,null,4,4,3,null,null,null],
+  ['2024-04-05','zintel', 4,5,null,4,5,3,5,3,6, null,null,null,null,null,null,null,null,null],
+  ['2024-04-26','zintel', 5,3,4,5,4,3,4,5,5, 3,5,4,4,4,2,5,5,5],
+  ['2024-04-28','zintel', 4,2,4,4,4,4,5,3,6, 3,5,7,3,4,5,5,4,4],
+  ['2024-05-02','zintel', null,null,null,null,null,null,null,null,null, 4,5,6,4,3,4,5,7,7],
+  ['2024-05-03','zintel', 5,5,4,5,4,4,6,3,6, 3,5,4,5,5,5,4,6,4],
+  ['2024-05-08','zintel', null,null,null,null,null,null,null,null,null, 5,5,4,5,3,3,4,5,5],
+  ['2024-05-09','zintel', null,null,null,null,null,null,null,null,null, 5,4,4,4,5,4,4,5,5],
+  ['2024-05-10','zintel', 5,3,3,3,4,4,6,4,5, 3,4,4,3,3,4,4,5,5],
+  ['2024-05-10','zintel', 4,4,3,4,5,3,6,5,8, 3,4,4,3,2,5,4,6,6],
+  ['2024-05-16','zintel', 5,4,5,4,3,4,7,6,5, null,null,null,null,null,null,null,null,null],
+  // 2025 chunk 1 — Feb through May 29
+  ['2025-02-01','zintel', 4,3,4,3,5,4,7,3,5, null,null,null,null,null,null,null,null,null],
+  ['2025-02-22','zintel', 5,4,4,5,5,3,5,3,7, 4,6,7,3,3,2,4,7,6],
+  ['2025-03-01','zintel', 4,3,5,5,4,3,5,3,6, 5,4,4,4,5,3,7,7,6],
+  ['2025-03-02','zintel', 5,3,3,5,5,5,5,3,6, 3,5,7,3,3,4,4,6,5],
+  ['2025-03-08','zintel', 5,4,4,4,6,3,6,4,5, 3,5,4,4,5,3,5,6,5],
+  ['2025-03-09','zintel', 5,6,3,4,5,4,5,4,5, 4,6,5,3,3,4,4,4,5],
+  ['2025-03-15','zintel', 5,4,4,5,5,3,5,4,6, 4,6,5,3,4,6,6,5,5],
+  ['2025-03-22','zintel', 5,3,4,4,4,3,7,4,5, 3,5,4,3,3,4,5,5,7],
+  ['2025-03-26','zintel', 3,4,5,5,3,3,5,3,6, 4,5,5,2,4,4,5,5,4],
+  ['2025-03-30','zintel', 4,3,5,3,6,3,5,3,4, 3,5,5,3,4,5,5,5,5],
+  ['2025-04-05','zintel', 5,3,4,3,5,5,5,3,5, 3,5,5,2,4,5,5,4,6],
+  ['2025-04-07','zintel', 5,4,3,5,5,4,5,4,4, null,null,null,null,null,null,null,null,null],
+  ['2025-04-10','zintel', null,null,null,null,null,null,null,null,null, 4,4,5,5,4,4,4,5,6],
+  ['2025-04-12','zintel', 6,4,5,4,4,4,6,3,5, 6,5,5,3,4,4,4,6,6],
+  ['2025-04-17','zintel', 4,4,4,5,4,3,4,4,6, null,null,null,null,null,null,null,null,null],
+  ['2025-04-20','zintel', 4,4,4,5,5,4,5,4,5, 4,4,4,2,3,6,6,5,5],
+  ['2025-04-26','zintel', 5,4,4,4,5,4,6,5,6, 6,4,3,4,4,5,4,4,5],
+  ['2025-04-28','zintel', 5,4,4,4,5,3,5,4,6, null,null,null,null,null,null,null,null,null],
+  ['2025-05-01','zintel', null,null,null,null,null,null,null,null,null, 4,5,5,4,4,3,4,5,5],
+  ['2025-05-02','zintel', 5,5,4,5,4,4,5,5,4, 4,4,5,3,3,3,6,4,6],
+  ['2025-05-02','zintel', 4,4,4,6,4,4,6,4,5, 4,5,5,3,3,4,4,5,4],
+  ['2025-05-08','zintel', null,null,null,null,null,null,null,null,null, 3,4,6,5,3,3,3,5,4],
+  ['2025-05-22','zintel', null,null,null,null,null,null,null,null,null, 3,5,6,3,2,4,6,5,5],
+  ['2025-05-23','zintel', 5,3,5,4,4,3,6,4,5, 3,5,4,5,3,4,4,4,5],
+  ['2025-05-25','zintel', 4,2,3,5,5,3,6,2,5, 3,5,4,5,4,5,5,3,5],
+  ['2025-05-26','zintel', 3,3,4,4,4,3,6,2,5, 4,5,4,4,4,3,3,7,4],
+  ['2025-05-29','zintel', 4,4,3,3,5,4,4,4,5, null,null,null,null,null,null,null,null,null],
+  ['2026-01-04','zintel', 5,3,4,3,4,3,6,4,3, 3,5,4,4,3,4,5,4,4],
+  ['2026-01-10','zintel', 5,3,4,5,4,2,5,3,5, null,null,null,null,null,null,null,null,null],
+  ['2026-01-11','zintel', 4,3,5,5,4,3,5,4,4, 4,4,5,3,2,3,4,5,5],
+  ['2026-01-17','zintel', 5,3,4,5,6,4,5,4,5, 4,5,5,4,4,4,4,5,3],
+  ['2026-01-31','zintel', 6,3,4,5,5,2,7,3,5, null,null,null,null,null,null,null,null,null],
+  ['2026-02-01','zintel', 5,4,5,4,4,3,7,4,5, 4,4,4,3,3,6,4,4,5],
+  ['2026-02-07','zintel', 5,3,3,4,5,3,6,4,6, 3,4,5,null,null,null,null,null,null],
+  ['2026-02-14','zintel', 5,3,4,4,5,3,5,3,5, null,null,null,null,null,null,null,null,null],
+  ['2026-02-15','zintel', 5,3,3,4,5,4,5,3,5, 3,4,5,4,3,3,4,6,5],
+  ['2026-02-22','zintel', 5,3,6,5,4,3,5,4,5, 4,5,5,2,3,4,5,7,5],
+  ['2026-03-14','zintel', 4,5,4,3,5,4,6,3,5, 4,4,4,3,4,4,5,4,5],
+  ['2026-03-15','zintel', 4,3,4,5,4,3,6,3,6, null,null,null,null,null,null,null,null,null],
+  ['2026-03-28','zintel', 7,3,4,4,3,3,8,3,7, 4,5,4,3,2,4,4,6,5],
+  ['2026-04-04','zintel', 5,4,5,5,5,2,5,3,4, 4,5,6,3,6,3,4,4,5],
+  ['2026-04-09','zintel', 6,4,3,3,5,3,4,4,3, null,null,null,null,null,null,null,null,null],
+  ['2026-04-23','zintel', null,null,null,null,null,null,null,null,null, 3,5,3,3,4,4,4,6,5],
+  ['2026-04-25','zintel', 5,4,3,5,4,2,6,3,5, 3,4,7,4,3,4,4,5,7],
+  ['2026-04-30','zintel', 6,5,4,5,3,4,6,3,6, null,null,null,null,null,null,null,null,null],
+  ['2026-05-03','zintel', 5,3,3,4,5,4,5,4,4, 4,5,6,4,3,2,4,4,5],
+  ['2026-05-06','zintel', null,null,null,null,null,null,null,null,null, 3,6,5,3,3,4,5,5,6],
+  ['2026-05-07','zintel', null,null,null,null,null,null,null,null,null, 5,4,4,4,4,4,4,5,5],
+  ['2026-05-09','zintel', 4,3,4,3,5,3,6,4,5, 3,5,5,2,3,4,4,4,5],
+  ['2026-05-10','zintel', 4,4,4,4,4,3,6,4,4, 4,5,5,3,3,5,4,5,6],
+  ['2026-05-14','zintel', 3,4,4,5,5,5,6,4,6, null,null,null,null,null,null,null,null,null],
+  ['2026-05-16','zintel', 5,3,5,5,5,4,6,3,5, 4,5,5,3,3,4,3,5,5],
+  ['2026-05-17','zintel', 4,3,4,4,5,3,6,4,4, 4,5,5,3,4,3,5,4,4],
+  ['2026-05-21','zintel', null,null,null,null,null,null,null,null,null, 3,5,4,3,4,3,4,5,6],
+  ['2026-05-23','zintel', 4,3,3,4,4,3,4,3,5, 4,5,4,5,3,3,5,4,6],
+  ['2026-05-24','zintel', 4,3,4,4,5,3,5,4,5, 4,5,4,4,4,4,4,5,5],
+  ['2026-05-25','zintel', 5,4,5,3,4,3,6,3,4, 4,5,4,4,3,4,5,5,5],
+  ['2026-05-28','zintel', 4,4,3,6,4,3,4,3,5, null,null,null,null,null,null,null,null,null],
+  ['2026-05-30','zintel', 6,2,5,3,4,6,6,4,4, 4,4,4,null,null,null,null,null,null],
+];
+
+function buildRound(raw) {
+  const [date, tee, ...rest] = raw;
+  const h = rest.slice(0,18);
+  const hasFront = h[0] !== null && h[0] !== undefined;
+  const hasBack = h.slice(9,18).some(v=>v!=null);
+  const isFullRound = hasFront && h.slice(9,18).every(v=>v!==null&&v!==undefined);
+  const front = hasFront ? h.slice(0,9).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
+  const back = hasBack ? h.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
+  const total = isFullRound ? front+back : null;
+  let birdies=0,parOrBetter=0,doubles=0,holesPlayed=0,eagles=0,hios=0;
+  h.forEach((s,i)=>{ if(s==null)return; holesPlayed++; const d=s-PARS[i]; if(s===1)hios++; else if(d<=-2)eagles++; else if(d===-1)birdies++; if(d<=0)parOrBetter++; if(d>=2)doubles++; });
+  const diff = isFullRound ? parseFloat(((total-TEES[tee].rating)*113/TEES[tee].slope).toFixed(2)) : null;
+  return { id: Date.now()+Math.floor(Math.random()*10000), date, tee, holes:h, front, back, total, isFullRound, hasFront, hasBack, diff, birdies, parOrBetter, doubles, holesPlayed, eagles, hios };
+}
+
+const EXTRA_ROUNDS = [
+  {id:20210630001, date:'2021-06-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'othercourse'},
+  {id:20211230001, date:'2021-12-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'othercourse'},
+  {id:20220630001, date:'2022-06-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:135, roundType:'othercourse'},
+  {id:20221230001, date:'2022-12-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:153, roundType:'othercourse'},
+  {id:20230630001, date:'2023-06-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:126, roundType:'othercourse'},
+  {id:20231230001, date:'2023-12-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:135, roundType:'othercourse'},
+  {id:20240424001, date:'2024-04-24', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:4, roundType:'practice'},
+  {id:20240430001, date:'2024-04-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:15, roundType:'practice'},
+  {id:20240512001, date:'2024-05-12', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:4, roundType:'practice'},
+  {id:20240520001, date:'2024-05-20', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:9, roundType:'practice'},
+  {id:20241006001, date:'2024-10-06', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:9, roundType:'practice'},
+  {id:20241026001, date:'2024-10-26', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:7, roundType:'practice'},
+  {id:20241027001, date:'2024-10-27', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20241109001, date:'2024-11-09', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20241230001, date:'2024-12-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:189, roundType:'othercourse'},
+  {id:20250118001, date:'2025-01-18', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:2, roundType:'practice'},
+  {id:20250423001, date:'2025-04-23', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:5, roundType:'practice'},
+  {id:20250430001, date:'2025-04-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:5, roundType:'practice'},
+  {id:20250621001, date:'2025-06-21', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:9, roundType:'practice'},
+  {id:20250906001, date:'2025-09-06', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:5, roundType:'practice'},
+  {id:20251108001, date:'2025-11-08', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20251115001, date:'2025-11-15', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20251122001, date:'2025-11-22', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20251123001, date:'2025-11-23', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:7, roundType:'practice'},
+  {id:20251129001, date:'2025-11-29', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20251230001, date:'2025-12-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:77, roundType:'othercourse'},
+  // 2026 practice, tournament, other course entries
+  {id:20260409001, date:'2026-04-09', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:6, roundType:'practice'},
+  {id:20260414001, date:'2026-04-14', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'othercourse', isNewCourse:false},
+  {id:20260415001, date:'2026-04-15', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'othercourse', isNewCourse:true},
+  {id:20260423001, date:'2026-04-23', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:3, roundType:'practice'},
+  {id:20260430001, date:'2026-04-30', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:2, roundType:'practice'},
+  {id:20260507001, date:'2026-05-07', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:8, roundType:'practice'},
+  {id:20260514001, date:'2026-05-14', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:6, roundType:'practice'},
+  {id:20260521001, date:'2026-05-21', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:5, roundType:'practice'},
+  {id:20260528001, date:'2026-05-28', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:8, roundType:'practice'},
+  {id:20260228001, date:'2026-02-28', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+  {id:20260319001, date:'2026-03-19', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:4, roundType:'practice'},
+  {id:20260321001, date:'2026-03-21', tee:'zintel', holes:Array(18).fill(null), front:null, back:null, total:null, isFullRound:false, hasFront:false, hasBack:false, diff:null, birdies:0, parOrBetter:0, doubles:0, holesPlayed:18, roundType:'tournament'},
+];
+
+let rounds = [...HARDCODED.map(buildRound), ...EXTRA_ROUNDS];
+try { const s=JSON.parse(localStorage.getItem('zc_rounds_v34')||'null'); if(s&&s.length) rounds=s.map(r=>recalcRound(r)); } catch {}
+cleanupRounds();
+function saveToStorage(){try{localStorage.setItem('zc_rounds_v34',JSON.stringify(rounds));}catch{}}
+
+function cleanupRounds(){
+  rounds=rounds.filter(r=>{
+    if(r.roundType==='practice'||r.roundType==='tournament'||r.roundType==='othercourse') return r.holesPlayed>0;
+    return true;
+  });
+  saveToStorage();
+}
+
+function recalcRound(r) {
+  // Practice and tournament rounds only store holesPlayed — skip full recalc
+  if(r.roundType==='practice'||r.roundType==='tournament'||r.roundType==='othercourse') return r;
+  const h = r.holes;
+  r.hasFront = h[0]!=null;
+  r.hasBack = h.slice(9,18).some(v=>v!=null);
+  r.isFullRound = r.hasFront && h.slice(9,18).every(v=>v!=null);
+  r.front = r.hasFront ? h.slice(0,9).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
+  r.back = r.hasBack ? h.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
+  r.total = r.isFullRound ? r.front+r.back : null;
+  r.birdies=0; r.parOrBetter=0; r.doubles=0; r.holesPlayed=0; r.eagles=0; r.hios=0;
+  h.forEach((s,i)=>{ if(s==null)return; r.holesPlayed++; const d=s-PARS[i]; if(d<=-1)r.birdies++; if(d<=0)r.parOrBetter++; if(d>=2)r.doubles++; if(d<=-2)r.eagles++; if(s===1)r.hios++; });
+  r.diff = r.isFullRound ? parseFloat(((r.total-TEES[r.tee].rating)*113/TEES[r.tee].slope).toFixed(2)) : null;
+  return r;
+}
+
+function calcHandicap(list) {
+  const diffs=list.filter(r=>r.isFullRound&&r.diff!==null).map(r=>r.diff).sort((a,b)=>a-b);
+  if(diffs.length<3)return null;
+  const n=diffs.length,c=n>=20?8:n>=17?7:n>=14?6:n>=12?5:n>=9?4:n>=7?3:n>=5?2:1;
+  return(diffs.slice(0,c).reduce((a,b)=>a+b,0)/c)*0.96;
+}
+
+function showSection(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active'); btn.classList.add('active');
+  if(id==='dashboard')renderDashboard();
+  if(id==='history')renderHistory();
+  if(id==='holes')renderHoles();
+  if(id==='years')renderYears();
+  if(id==='teetime')renderGoalsTable();
+}
+
+function scoreCls(s,par){const d=s-par;return d<=-2?'eagle':d===-1?'birdie':d===0?'par':d===1?'bogey':'double';}
+
+function buildScorecardHTML(r, editMode) {
+  const front = r.holes.slice(0,9);
+  const back = r.holes.slice(9,18);
+  const frontSum = r.front;
+  const backSum = r.back;
+  const total = r.total;
+
+  function cellView(s, i) {
+    if(s==null) return '<td>—</td>';
+    return `<td class="sc-${scoreCls(s,PARS[i])}">${s}</td>`;
+  }
+  function cellEdit(s, i) {
+    const v = s!=null ? s : '';
+    const cls = s!=null ? 'edit-input '+scoreCls(s,PARS[i]) : 'edit-input';
+    return `<td><input class="${cls}" type="number" min="1" max="15" value="${v}" data-hole="${i}" oninput="editHoleInput(this,${i},'${r.id}')" /></td>`;
+  }
+
+  const frontCells = front.map((s,i)=> editMode ? cellEdit(s,i) : cellView(s,i)).join('');
+  const backCells  = back.map((s,i)=> editMode ? cellEdit(s,i+9) : cellView(s,i+9)).join('');
+
+  return `
+    <table class="scorecard">
+      <thead>
+        <tr>
+          <th>Hole</th>${[1,2,3,4,5,6,7,8,9].map(n=>`<th>${n}</th>`).join('')}<th>Out</th>
+          ${[10,11,12,13,14,15,16,17,18].map(n=>`<th>${n}</th>`).join('')}<th>In</th><th>Tot</th>
+        </tr>
+        <tr class="par-row">
+          <td class="hole-label">Par</td>${PARS.slice(0,9).map(p=>`<td>${p}</td>`).join('')}<td>33</td>
+          ${PARS.slice(9).map(p=>`<td>${p}</td>`).join('')}<td>33</td><td>66</td>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="score-row">
+          <td class="hole-label">Score</td>${frontCells}<td class="total-col">${frontSum!=null?frontSum:'—'}</td>
+          ${backCells}<td class="total-col">${backSum!=null?backSum:'—'}</td>
+          <td class="total-col">${total!=null?total:'—'}</td>
+        </tr>
+      </tbody>
+    </table>`;
+}
+
+function toggleRound(id) {
+  const detail = document.getElementById('detail-'+id);
+  const icon = document.getElementById('icon-'+id);
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  icon.classList.toggle('open', !isOpen);
+}
+
+function enterEditMode(id) {
+  const r = rounds.find(x=>String(x.id)===String(id));
+  if(!r) return;
+  const detailEl = document.getElementById('detail-'+id);
+  detailEl.innerHTML = buildDetailHTML(r, true);
+}
+
+function editHoleInput(el, holeIdx, id) {
+  const v = parseInt(el.value);
+  el.className = 'edit-input' + (isNaN(v) ? '' : ' '+scoreCls(v, PARS[holeIdx]));
+}
+
+function saveEdit(id) {
+  const r = rounds.find(x=>String(x.id)===String(id));
+  if(!r) return;
+  const inputs = document.getElementById('detail-'+id).querySelectorAll('.edit-input');
+  let newHoles = [...r.holes];
+  inputs.forEach(inp => {
+    const hi = parseInt(inp.dataset.hole);
+    const v = parseInt(inp.value);
+    newHoles[hi] = isNaN(v) ? null : v;
+  });
+  r.holes = newHoles;
+  recalcRound(r);
+  saveToStorage();
+  renderHistory();
+  showToast('Round updated!');
+  // Re-open expanded
+  setTimeout(()=>{
+    const detail = document.getElementById('detail-'+id);
+    const icon = document.getElementById('icon-'+id);
+    if(detail){ detail.classList.add('open'); icon.classList.add('open'); }
+  }, 50);
+}
+
+function cancelEdit(id) {
+  const r = rounds.find(x=>String(x.id)===String(id));
+  if(!r) return;
+  const detailEl = document.getElementById('detail-'+id);
+  detailEl.innerHTML = buildDetailHTML(r, false);
+  detailEl.classList.add('open');
+  document.getElementById('icon-'+id).classList.add('open');
+}
+
+function buildDetailHTML(r, editMode) {
+  const vp = r.total!=null ? r.total-66 : null;
+  const vpStr = vp!=null ? (vp>0?'+'+vp:vp===0?'E':''+vp) : '—';
+  const statsHTML = `
+    <div class="detail-stats">
+      <span><strong>${r.isFullRound ? r.total : '—'}</strong> total</span>
+      <span><strong>${vpStr}</strong> vs par</span>
+      <span><strong>${r.birdies}</strong> birdie${r.birdies!==1?'s':''}</span>
+      <span><strong>${r.parOrBetter}</strong> par or better</span>
+      <span><strong>${r.doubles}</strong> double+</span>
+      ${r.diff!=null?`<span><strong>${r.diff.toFixed(1)}</strong> diff</span>`:''}
+    </div>`;
+  const scorecard = buildScorecardHTML(r, editMode);
+  const actions = editMode
+    ? `<div class="detail-actions">
+        <button class="btn-sm save" onclick="saveEdit(${r.id})"><i class="ti ti-check"></i> Save changes</button>
+        <button class="btn-sm" onclick="cancelEdit(${r.id})">Cancel</button>
+       </div>`
+    : `<div class="detail-actions">
+        <button class="btn-sm" onclick="enterEditMode(${r.id})"><i class="ti ti-edit"></i> Edit scores</button>
+        <button class="btn-sm danger" onclick="deleteRound(${r.id})"><i class="ti ti-trash"></i> Delete</button>
+       </div>`;
+  return statsHTML + scorecard + actions;
+}
+
+let selectedHistoryYear='all';
+function renderHistory() {
+  const years=[...new Set(rounds.map(r=>r.date.slice(0,4)))].sort().reverse();
+  if(selectedHistoryYear!=='all' && !years.includes(selectedHistoryYear)) selectedHistoryYear='all';
+  const tabEl=document.getElementById('history-year-tabs');
+  if(tabEl) tabEl.innerHTML=
+    `<button class="year-tab${selectedHistoryYear==='all'?' active':''}" onclick="selectHistoryYear('all')">All time</button>`+
+    years.map(y=>`<button class="year-tab${y===selectedHistoryYear?' active':''}" onclick="selectHistoryYear('${y}')">${y}</button>`).join('');
+  const subset=selectedHistoryYear==='all'?rounds:rounds.filter(r=>r.date.startsWith(selectedHistoryYear));
+  const sorted=[...subset].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const el=document.getElementById('history-list');
+  if(!sorted.length){el.innerHTML='<div class="empty-state">No rounds for this period.</div>';return;}
+  el.innerHTML='<div class="section-label" style="margin-bottom:8px;">'+sorted.length+' rounds — tap a row to expand</div>'+
+    sorted.map(r=>{
+      let badgeHTML, scoreHTML, metaHTML;
+      if(r.isFullRound){
+        const vp=r.total-66,vs=vp>0?'+'+vp:vp===0?'E':''+vp,cls=vp<=0?'badge-green':vp<=5?'badge-amber':'badge-red';
+        badgeHTML=`<span class="badge ${cls}">${vs}</span>`;
+        scoreHTML=`<span style="font-weight:600">${r.total}</span>`;
+        metaHTML=`${TEES[r.tee].name} · ${r.front}/${r.back} · ${r.birdies} birdie${r.birdies!==1?'s':''} · diff ${r.diff.toFixed(1)}`;
+      } else {
+        if(r.roundType==='practice'||r.roundType==='tournament'||r.roundType==='othercourse'){
+          const lbl=r.roundType==='practice'?'Practice':r.roundType==='tournament'?'Tournament':(r.isNewCourse?'New Course':'Other Course');
+          const bg=r.roundType==='practice'?'#EEF4FF':r.roundType==='tournament'?'#F5F0FF':'#FFF4E5';
+          const tc=r.roundType==='practice'?'#3B5FBF':r.roundType==='tournament'?'#6B3FBF':'#8A5200';
+          badgeHTML=`<span class="badge" style="background:${bg};color:${tc};">${lbl}</span>`;
+          scoreHTML=`<span style="color:var(--text-3);font-size:12px;">${r.holesPlayed}h</span>`;
+          metaHTML=`${r.holesPlayed} holes logged · no stats recorded`;
+        } else {
+          const lbl=r.hasFront&&r.hasBack?'Partial':r.hasFront?'Front 9':'Back 9';
+          badgeHTML=`<span class="badge badge-gray">${lbl}</span>`;
+          scoreHTML=`<span style="color:var(--text-3);font-size:12px;">${r.holesPlayed}h</span>`;
+          metaHTML=`${r.hasFront?'Out: '+r.front:''}${r.hasBack?' · In: '+r.back:''} · ${r.birdies} birdie${r.birdies!==1?'s':''}`;
+        }
+      }
+      if(r.roundType==='practice'||r.roundType==='tournament'||r.roundType==='othercourse'){
+        return `<div class="round-entry"><div class="round-summary" style="cursor:default;"><div><div>${r.date} ${badgeHTML}</div><div class="round-meta">${metaHTML}</div></div><div style="display:flex;align-items:center;gap:10px;">${scoreHTML}<button class="delete-btn" onclick="deleteRound(${r.id})" aria-label="Delete"><i class="ti ti-trash"></i></button></div></div></div>`;
+      }
+      return `
+        <div class="round-entry">
+          <div class="round-summary" onclick="toggleRound(${r.id})">
+            <div>
+              <div>${r.date} ${badgeHTML}</div>
+              <div class="round-meta">${metaHTML}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              ${scoreHTML}
+              <i class="ti ti-chevron-down round-expand" id="icon-${r.id}"></i>
+            </div>
+          </div>
+          <div class="round-detail" id="detail-${r.id}">
+            ${buildDetailHTML(r, false)}
+          </div>
+        </div>`;
+    }).join('');
+}
+
+function selectHistoryYear(y){selectedHistoryYear=y;renderHistory();}
+function deleteRound(id){
+  if(!confirm('Delete this round?'))return;
+  const idx=rounds.findIndex(r=>String(r.id)===String(id));
+  if(idx===-1){
+    // fallback: try numeric comparison
+    const idx2=rounds.findIndex(r=>Math.round(r.id)===Math.round(Number(id)));
+    if(idx2!==-1) rounds.splice(idx2,1);
+  } else {
+    rounds.splice(idx,1);
+  }
+  saveToStorage();renderHistory();showToast('Round deleted');
+}
+
+function renderDashboard() {
+  const currentYear=new Date().getFullYear().toString();
+  const sorted=[...rounds].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const yrRounds=sorted.filter(r=>r.date.startsWith(currentYear));
+  const yrStats=yrRounds.filter(r=>r.roundType!=='practice'&&r.roundType!=='tournament'&&r.roundType!=='othercourse');
+  const full=yrStats.filter(r=>r.isFullRound);
+  const avg5=full.length?(full.reduce((a,r)=>a+r.total,0)/full.length).toFixed(1):'—';
+  const avgFront=full.length?(full.reduce((a,r)=>a+r.front,0)/full.length).toFixed(1):'—';
+  const avgBack=full.length?(full.reduce((a,r)=>a+r.back,0)/full.length).toFixed(1):'—';
+  const best=full.length?Math.min(...full.map(r=>r.total)):'—';
+  const totalBirdies=yrStats.reduce((a,r)=>a+r.birdies,0);
+  const totalHoles=yrRounds.reduce((a,r)=>a+r.holesPlayed,0);
+  const statHoles=yrStats.reduce((a,r)=>a+r.holesPlayed,0);
+  const pbPct=statHoles?(yrStats.reduce((a,r)=>a+r.parOrBetter,0)/statHoles*100).toFixed(1):'0.0';
+  const dbPct=statHoles?(yrStats.reduce((a,r)=>a+r.doubles,0)/statHoles*100).toFixed(1):'0.0';
+  const normRounds=statHoles/18;
+  const birdiesPer18=normRounds>0?(totalBirdies/normRounds).toFixed(2):'—';
+  const totalEagles=yrStats.reduce((a,r)=>a+(r.eagles||0),0);
+  const totalHios=yrStats.reduce((a,r)=>a+(r.hios||0),0);
+  try{const g=localStorage.getItem('zc_ghin');if(g){document.getElementById('ghin-input').value=g;}}catch{}
+  document.getElementById('dash-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Avg score</div><div class="metric-value">${avg5}</div><div class="metric-sub">${currentYear} · par 66</div></div><div class="metric"><div class="metric-label">Avg front / back</div><div class="metric-value" style="font-size:18px;">${avgFront} / ${avgBack}</div><div class="metric-sub">${currentYear} · par 33/33</div></div>
+    <div class="metric"><div class="metric-label">Best round</div><div class="metric-value">${best}</div><div class="metric-sub">${currentYear}</div></div>
+    <div class="metric"><div class="metric-label">Holes Played</div><div class="metric-value">${totalHoles}</div><div class="metric-sub">${currentYear}</div></div><div class="metric"><div class="metric-label">Birdies</div><div class="metric-value">${totalBirdies}</div><div class="metric-sub">${yrStats.length} rounds · ${currentYear}</div></div>
+    <div class="metric"><div class="metric-label">Birdies per 18</div><div class="metric-value">${birdiesPer18}</div><div class="metric-sub">${currentYear}</div></div>
+    <div class="metric"><div class="metric-label">Eagles</div><div class="metric-value">${totalEagles}</div><div class="metric-sub">${currentYear}</div></div>
+    <div class="metric"><div class="metric-label">Hole in ones</div><div class="metric-value">${totalHios}</div><div class="metric-sub">${currentYear}</div></div>
+    <div class="metric"><div class="metric-label">Par or better</div><div class="metric-value">${pbPct}%</div><div class="metric-sub">${currentYear} · per hole</div></div>
+    <div class="metric"><div class="metric-label">Double bogey+</div><div class="metric-value">${dbPct}%</div><div class="metric-sub">${currentYear} · per hole</div></div>`;
+  // Birdie tracker
+  const birdieTracker=document.getElementById('dash-birdie-tracker');
+  const holesBirdied=Array(18).fill(false);
+  yrStats.forEach(r=>{
+    r.holes.forEach((s,i)=>{ if(s!=null && s-PARS[i]<=-1) holesBirdied[i]=true; });
+  });
+  const birdiedCount=holesBirdied.filter(Boolean).length;
+  const frontHoles=holesBirdied.slice(0,9);
+  const backHoles=holesBirdied.slice(9,18);
+  function holeCell(birdied, holeNum) {
+    const bg = birdied ? '#1D9E75' : 'var(--bg)';
+    const color = birdied ? '#ffffff' : 'var(--text-3)';
+    const border = birdied ? '#1D9E75' : 'var(--border-mid)';
+    return `<div style="text-align:center;">
+      <div style="font-size:9px;color:var(--text-3);margin-bottom:3px;">${holeNum}</div>
+      <div style="width:28px;height:28px;border-radius:50%;background:${bg};border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:10px;font-weight:600;color:${color};">${birdied?'✓':'—'}</div>
+    </div>`;
+  }
+  birdieTracker.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+      <div class="section-label" style="margin-bottom:0;">Birdie tracker — ${currentYear}</div>
+      <div style="font-size:12px;color:var(--text-2);">${birdiedCount}/18 holes birdied</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin-bottom:8px;">
+      ${frontHoles.map((b,i)=>holeCell(b,i+1)).join('')}
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:6px;">
+      ${backHoles.map((b,i)=>holeCell(b,i+10)).join('')}
+    </div>`;
+
+  const rc=document.getElementById('dash-recent');
+  rc.innerHTML='<div class="section-label" style="margin-bottom:8px;">Recent rounds</div>'+
+    sorted.slice(0,5).map(r=>{
+      if(r.isFullRound){const vp=r.total-66,vs=vp>0?'+'+vp:vp===0?'E':''+vp,cls=vp<=0?'badge-green':vp<=5?'badge-amber':'badge-red';return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><div>${r.date} <span class="badge ${cls}">${vs}</span></div><div class="round-meta">${TEES[r.tee].name} · ${r.front}/${r.back} · ${r.birdies} birdie${r.birdies!==1?'s':''}</div></div><div style="font-weight:600">${r.total}<span style="font-size:11px;color:var(--text-3);margin-left:4px;">diff ${r.diff.toFixed(1)}</span></div></div>`;}
+      const lbl=r.hasFront?'Front 9':'Back 9';const sc=r.hasFront?r.front:r.back;
+      return`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><div><div>${r.date} <span class="badge badge-gray">${lbl}</span></div><div class="round-meta">${sc} · ${r.birdies} birdie${r.birdies!==1?'s':''}</div></div><div style="color:var(--text-3);font-size:12px;">${r.holesPlayed}h</div></div>`;
+    }).join('');
+  const fa=[...full].reverse();
+  const tc=document.getElementById('dash-trend-card');
+  if(fa.length>1){
+    tc.innerHTML='<div class="section-label">Handicap differential trend — full 18 rounds</div><div style="position:relative;height:130px;margin-top:8px;"><canvas id="trendChart" role="img" aria-label="Differential trend"></canvas></div>';
+    if(window._trendChart){try{window._trendChart.destroy();}catch{}}
+    window._trendChart=new Chart(document.getElementById('trendChart'),{type:'line',data:{labels:fa.map(r=>r.date.slice(5)),datasets:[{data:fa.map(r=>parseFloat(r.diff.toFixed(1))),borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.07)',borderWidth:1.5,pointRadius:2,tension:0.3,fill:true}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:true}},y:{ticks:{font:{size:11}}}}}});
+  } else { tc.innerHTML='<div class="section-label">Handicap differential trend</div><div class="empty-state">Log at least 2 full rounds to see your trend.</div>'; }
+}
+
+let selectedHoleYear='all';
+function renderHoles() {
+  const years=[...new Set(rounds.map(r=>r.date.slice(0,4)))].sort().reverse();
+  if(selectedHoleYear!=='all' && selectedHoleYear!=='vsprev' && !years.includes(selectedHoleYear)) selectedHoleYear='all';
+  const tabEl=document.getElementById('hole-year-tabs');
+  if(tabEl) tabEl.innerHTML=
+    `<button class="year-tab${selectedHoleYear==='all'?' active':''}" onclick="selectHoleYear('all')">All time</button>`+
+    `<button class="year-tab${selectedHoleYear==='vsprev'?' active':''}" onclick="selectHoleYear('vsprev')">Vs Previous Year</button>`+
+    years.map(y=>`<button class="year-tab${y===selectedHoleYear?' active':''}" onclick="selectHoleYear('${y}')">${y}</button>`).join('');
+  const label=selectedHoleYear==='all'?'All time':selectedHoleYear;
+  const labelEl=document.getElementById('hole-card-label');
+  if(labelEl) labelEl.textContent=`Average score per hole vs par — ${label}`;
+  // Show/hide vs prev cards vs normal cards
+  const vsPrevCards=['vs-prev-bars','vs-prev-partype','vs-prev-movers'];
+  const normalCards=['hole-perf-front','hole-perf-back','par-type-stats','hardest-holes','easiest-holes'];
+  const isVsPrev = selectedHoleYear==='vsprev';
+  vsPrevCards.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=isVsPrev?'':'none'; });
+  normalCards.forEach(id=>{ const el=document.getElementById(id); if(el) el.style.display=isVsPrev?'none':''; });
+  document.getElementById('hole-card-label').closest('.card').style.display=isVsPrev?'none':'';
+
+  if(isVsPrev){
+    const years=[...new Set(rounds.map(r=>r.date.slice(0,4)))].sort().reverse();
+    const curYear=years[0], prevYear=years[1];
+    if(!prevYear){ document.getElementById('vs-prev-bars').innerHTML='<div class="empty-state">Need at least 2 years of data.</div>'; document.getElementById('vs-prev-bars').style.display=''; return; }
+    const curFull=rounds.filter(r=>r.date.startsWith(curYear)&&r.isFullRound);
+    const prevFull=rounds.filter(r=>r.date.startsWith(prevYear)&&r.isFullRound);
+    const curAvgs=PARS.map((par,i)=>{ const sc=curFull.map(r=>r.holes[i]).filter(s=>s!=null); return sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:null; });
+    const prevAvgs=PARS.map((par,i)=>{ const sc=prevFull.map(r=>r.holes[i]).filter(s=>s!=null); return sc.length?sc.reduce((a,b)=>a+b,0)/sc.length:null; });
+
+    // Bar chart comparison
+    const maxAvg=Math.max(...[...curAvgs,...prevAvgs].filter(v=>v!=null));
+    const minAvg=Math.min(...[...curAvgs,...prevAvgs].filter(v=>v!=null));
+    const range=maxAvg-minAvg||1;
+    function dualBarHTML(holeIdx, label){
+      const c=curAvgs[holeIdx], p=prevAvgs[holeIdx];
+      const ch=c!=null?Math.max(6,Math.round((c-minAvg+0.5)/range*40)):0;
+      const ph=p!=null?Math.max(6,Math.round((p-minAvg+0.5)/range*40)):0;
+      const curColor=c!=null&&p!=null?(c<p?'#1D9E75':c>p?'#E24B4A':'#888780'):'#888780';
+      return `<div style="text-align:center;">
+        <div style="font-size:9px;color:var(--text-3);margin-bottom:3px;">${label}</div>
+        <div style="display:flex;gap:2px;align-items:flex-end;justify-content:center;height:44px;">
+          ${c!=null?`<div style="width:10px;height:${ch}px;background:${curColor};border-radius:2px 2px 0 0;" title="${curYear}: ${c.toFixed(1)}"></div>`:''}
+          ${p!=null?`<div style="width:10px;height:${ph}px;background:#C8C8C4;border-radius:2px 2px 0 0;" title="${prevYear}: ${p.toFixed(1)}"></div>`:''}
+        </div>
+        <div style="font-size:9px;color:var(--text-2);margin-top:2px;">${c!=null?c.toFixed(1):'—'}</div>
+      </div>`;
+    }
+    const frontBars=Array.from({length:9},(_,i)=>dualBarHTML(i,i+1)).join('');
+    const backBars=Array.from({length:9},(_,i)=>dualBarHTML(i+9,i+10)).join('');
+    document.getElementById('vs-prev-bars').innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="section-label" style="margin-bottom:0;">Avg score per hole — ${curYear} vs ${prevYear}</div>
+        <div style="display:flex;gap:10px;font-size:11px;">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#C8C8C4;border-radius:2px;margin-right:3px;"></span>${prevYear}</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#1D9E75;border-radius:2px;margin-right:3px;"></span>${curYear} better</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#E24B4A;border-radius:2px;margin-right:3px;"></span>${curYear} worse</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;margin-bottom:8px;">${frontBars}</div>
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);">Holes 1–9</div>
+      <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:4px;">${backBars}</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:6px;">Holes 10–18</div>`;
+
+    // Par type comparison
+    const parTypes=[3,4,5];
+    const parTypeRows=parTypes.map(pt=>{
+      const holes=PARS.map((p,i)=>({par:p,i})).filter(h=>h.par===pt);
+      const curDiff=holes.map(h=>curAvgs[h.i]!=null?curAvgs[h.i]-h.par:null).filter(v=>v!=null);
+      const prevDiff=holes.map(h=>prevAvgs[h.i]!=null?prevAvgs[h.i]-h.par:null).filter(v=>v!=null);
+      const cAvg=curDiff.length?(curDiff.reduce((a,b)=>a+b,0)/curDiff.length):null;
+      const pAvg=prevDiff.length?(prevDiff.reduce((a,b)=>a+b,0)/prevDiff.length):null;
+      const diff=cAvg!=null&&pAvg!=null?cAvg-pAvg:null;
+      const diffColor=diff==null?'var(--text-3)':diff<0?'var(--green)':diff>0?'var(--red)':'var(--text-2)';
+      const diffStr=diff==null?'—':(diff<0?'':'+')+(diff).toFixed(2);
+      const cColor=cAvg==null?'var(--text-3)':goalColor(cAvg,pt,curYear);
+      const pColor=pAvg==null?'var(--text-3)':goalColor(pAvg,pt,prevYear);
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="font-size:13px;font-weight:500;">Par ${pt}s</div>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <div style="text-align:center;"><div style="font-size:16px;font-weight:600;color:${cColor}">${cAvg!=null?(cAvg>0?'+':'')+cAvg.toFixed(2):'—'}</div><div style="font-size:10px;color:var(--text-3);">${curYear}</div></div>
+          <div style="text-align:center;"><div style="font-size:16px;font-weight:600;color:${pColor}">${pAvg!=null?(pAvg>0?'+':'')+pAvg.toFixed(2):'—'}</div><div style="font-size:10px;color:var(--text-3);">${prevYear}</div></div>
+        </div>
+      </div>`;
+    }).join('');
+    document.getElementById('vs-prev-partype').innerHTML=`<div class="section-label" style="margin-bottom:4px;">Performance by Par Type</div>${parTypeRows}`;
+
+    // Improvers and decliners
+    const diffs=PARS.map((par,i)=>{
+      const c=curAvgs[i], p=prevAvgs[i];
+      if(c==null||p==null) return null;
+      return {hole:i+1,par,cur:c,prev:p,change:c-p};
+    }).filter(Boolean).sort((a,b)=>a.change-b.change);
+    const improvers=diffs.slice(0,3);
+    const decliners=[...diffs].sort((a,b)=>b.change-a.change).slice(0,3);
+    function moverRow(d,improved){
+      const color=improved?'var(--green)':'var(--red)';
+      const sign=d.change>0?'+':'';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span>Hole ${d.hole} — Par ${d.par}</span>
+        <span style="display:flex;gap:16px;align-items:center;">
+          <span style="color:var(--text-3);font-size:11px;">${d.prev.toFixed(2)} → ${d.cur.toFixed(2)}</span>
+          <span style="font-weight:600;color:${color}">${sign}${d.change.toFixed(2)}</span>
+        </span>
+      </div>`;
+    }
+    document.getElementById('vs-prev-movers').innerHTML=
+      `<div class="section-label" style="margin-bottom:10px;">Top 3 Most Improved (${prevYear} → ${curYear})</div>`+
+      improvers.map(d=>moverRow(d,true)).join('')+
+      `<div class="section-label" style="margin-bottom:10px;margin-top:16px;">Top 3 Most Declined</div>`+
+      decliners.map(d=>moverRow(d,false)).join('');
+    return;
+  }
+
+  const subset=selectedHoleYear==='all'?rounds:rounds.filter(r=>r.date.startsWith(selectedHoleYear));
+  const full=subset;
+  const fEl=document.getElementById('hole-perf-front'),bEl=document.getElementById('hole-perf-back');
+  fEl.innerHTML='';bEl.innerHTML='';
+  if(!full.length){fEl.innerHTML='<div style="grid-column:span 9;font-size:13px;color:var(--text-3);">No rounds for this period.</div>';return;}
+  const avgs=PARS.map((par,i)=>{const sc=full.map(r=>r.holes[i]).filter(s=>s!=null);const avg=sc.reduce((a,b)=>a+b,0)/sc.length;return{hole:i+1,par,avg,diff:avg-par};});
+  const maxD=Math.max(...avgs.map(a=>Math.abs(a.diff)));
+  avgs.forEach((a,i)=>{const el=i<9?fEl:bEl;const h=Math.max(6,Math.round(Math.abs(a.diff)/(maxD||1)*40));const color=goalColor(a.diff,a.par,selectedHoleYear);const d=document.createElement('div');d.className='hole-perf';d.innerHTML=`<div class="hole-perf-bar"><div class="hole-perf-fill" style="height:${h}px;background:${color};"></div></div><div class="hole-perf-num">${a.avg.toFixed(1)}</div><div class="hole-perf-lbl">H${a.hole}</div>`;el.appendChild(d);});
+  const srt=[...avgs].sort((a,b)=>b.diff-a.diff);
+  document.getElementById('hardest-holes').innerHTML='<div class="section-label" style="margin-bottom:10px;">Hardest holes (avg over par)</div>'+srt.slice(0,3).map(a=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><span>Hole ${a.hole} — Par ${a.par}</span><span style="font-weight:600;color:${goalColor(a.diff,a.par,selectedHoleYear)}">+${a.diff.toFixed(2)}</span></div>`).join('');
+  const easiest=[...avgs].sort((a,b)=>a.diff-b.diff);
+  document.getElementById('easiest-holes').innerHTML='<div class="section-label" style="margin-bottom:10px;">Easiest holes (avg vs par)</div>'+easiest.slice(0,3).map(a=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;"><span>Hole ${a.hole} — Par ${a.par}</span><span style="font-weight:600;color:${goalColor(a.diff,a.par,selectedHoleYear)}">${a.diff<=0?a.diff.toFixed(2):'+'+a.diff.toFixed(2)}</span></div>`).join('');
+  const parTypes=[3,4,5];
+  const parTypeHTML=parTypes.map(pt=>{
+    const holes=avgs.filter(a=>a.par===pt);
+    if(!holes.length) return '';
+    const avgDiff=holes.reduce((a,b)=>a+b.diff,0)/holes.length;
+    const holeNums=holes.map(h=>h.hole).join(', ');
+    const color=goalColor(avgDiff,pt,selectedHoleYear);
+    const sign=avgDiff>0?'+':'';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div><div style="font-size:13px;font-weight:500;">Par ${pt}s</div><div style="font-size:11px;color:var(--text-3);margin-top:2px;">Holes ${holeNums}</div></div>
+      <div style="text-align:right;"><div style="font-size:18px;font-weight:600;color:${color}">${sign}${avgDiff.toFixed(2)}</div><div style="font-size:11px;color:var(--text-3);">avg vs par</div></div>
+    </div>`;
+  }).join('');
+  document.getElementById('par-type-stats').innerHTML='<div class="section-label" style="margin-bottom:4px;">Performance by par type</div>'+parTypeHTML;
+}
+function selectHoleYear(y){selectedHoleYear=y;renderHoles();}
+
+let selectedYear='all';
+function renderYears() {
+  const years=[...new Set(rounds.map(r=>r.date.slice(0,4)))].sort().reverse();
+  if(selectedYear!=='all' && !years.includes(selectedYear)) selectedYear='all';
+  document.getElementById('year-tabs').innerHTML=
+    `<button class="year-tab${selectedYear==='all'?' active':''}" onclick="selectYear('all')">All time</button>`+
+    years.map(y=>`<button class="year-tab${y===selectedYear?' active':''}" onclick="selectYear('${y}')">${y}</button>`).join('');
+
+  const yr = selectedYear==='all' ? rounds : rounds.filter(r=>r.date.startsWith(selectedYear));
+  const yrStats = yr.filter(r=>r.roundType!=='practice'&&r.roundType!=='tournament'&&r.roundType!=='othercourse');
+  const full=yrStats.filter(r=>r.isFullRound);
+  const totalH=yr.reduce((a,r)=>a+r.holesPlayed,0);
+  const statH=yrStats.reduce((a,r)=>a+r.holesPlayed,0);
+  const avg=full.length?(full.reduce((a,r)=>a+r.total,0)/full.length).toFixed(1):'—';
+  const avgF=full.length?(full.reduce((a,r)=>a+r.front,0)/full.length).toFixed(1):'—';
+  const avgB=full.length?(full.reduce((a,r)=>a+r.back,0)/full.length).toFixed(1):'—';
+  const birds=yrStats.reduce((a,r)=>a+r.birdies,0);
+  const pb=statH?(yrStats.reduce((a,r)=>a+r.parOrBetter,0)/statH*100).toFixed(1):'—';
+  const db=statH?(yrStats.reduce((a,r)=>a+r.doubles,0)/statH*100).toFixed(1):'—';
+  const normRoundsYr=statH/18;
+  const birdiesPer18Yr=normRoundsYr>0?(birds/normRoundsYr).toFixed(2):'—';
+  const best=full.length?Math.min(...full.map(r=>r.total)):'—';
+  const label=selectedYear==='all'?'All time':selectedYear;
+  document.getElementById('year-stats-grid').innerHTML=`
+    <div class="metric"><div class="metric-label">Rounds</div><div class="metric-value">${yrStats.length}</div><div class="metric-sub">${full.length} full · ${yrStats.length-full.length} nine-hole</div></div>
+    <div class="metric"><div class="metric-label">Total Holes</div><div class="metric-value">${totalH}</div><div class="metric-sub">${label} · all formats</div></div>
+    <div class="metric"><div class="metric-label">Best round</div><div class="metric-value">${best}</div><div class="metric-sub">${label}</div></div>
+    <div class="metric"><div class="metric-label">Birdies</div><div class="metric-value">${birds}</div><div class="metric-sub">${label}</div></div>
+    <div class="metric"><div class="metric-label">Eagles</div><div class="metric-value">${yrStats.reduce((a,r)=>a+(r.eagles||0),0)}</div><div class="metric-sub">${label}</div></div>
+    <div class="metric"><div class="metric-label">Hole in ones</div><div class="metric-value">${yrStats.reduce((a,r)=>a+(r.hios||0),0)}</div><div class="metric-sub">${label}</div></div>
+    ${selectedYear!=='all'?`
+    <div class="metric"><div class="metric-label">Avg score</div><div class="metric-value">${avg}</div><div class="metric-sub">${label} · full rounds</div></div>
+    <div class="metric"><div class="metric-label">Front / back avg</div><div class="metric-value">${avgF}/${avgB}</div></div>
+    <div class="metric"><div class="metric-label">Birdies per 18</div><div class="metric-value">${birdiesPer18Yr}</div><div class="metric-sub">${label}</div></div>
+    <div class="metric"><div class="metric-label">Par or better</div><div class="metric-value">${pb}%</div></div>
+    <div class="metric"><div class="metric-label">Double bogey+</div><div class="metric-value">${db}%</div></div>`:''}
+    `;
+
+  const allYears=[...years].reverse();
+  const yearAvgs=allYears.map(y=>{const f=rounds.filter(r=>r.date.startsWith(y)&&r.isFullRound);return f.length?(f.reduce((a,r)=>a+r.total,0)/f.length):null;});
+  // Birdie tracker for individual years (not all time)
+  const ytEl=document.getElementById('year-birdie-tracker');
+  if(selectedYear==='all'){
+    ytEl.style.display='none';
+    renderTrendCharts();
+  } else {
+    document.getElementById('year-trend-charts').style.display='none';
+    ytEl.style.display='';
+    const yrBirdied=Array(18).fill(false);
+    yrStats.forEach(r=>{ r.holes.forEach((s,i)=>{ if(s!=null&&s-PARS[i]<=-1) yrBirdied[i]=true; }); });
+    const yrBirdiedCount=yrBirdied.filter(Boolean).length;
+    const yrFront=yrBirdied.slice(0,9);
+    const yrBack=yrBirdied.slice(9,18);
+    function yrHoleCell(birdied,holeNum){
+      const bg=birdied?'#1D9E75':'var(--bg)';
+      const color=birdied?'#ffffff':'var(--text-3)';
+      const border=birdied?'#1D9E75':'var(--border-mid)';
+      return `<div style="text-align:center;"><div style="font-size:9px;color:var(--text-3);margin-bottom:3px;">${holeNum}</div><div style="width:28px;height:28px;border-radius:50%;background:${bg};border:1.5px solid ${border};display:flex;align-items:center;justify-content:center;margin:0 auto;font-size:10px;font-weight:600;color:${color};">${birdied?'✓':'—'}</div></div>`;
+    }
+    ytEl.innerHTML=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div class="section-label" style="margin-bottom:0;">Birdie Tracker — ${selectedYear}</div>
+        <div style="font-size:12px;color:var(--text-2);">${yrBirdiedCount}/18 holes birdied</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:6px;margin-bottom:8px;">
+        ${yrFront.map((b,i)=>yrHoleCell(b,i+1)).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(9,1fr);gap:6px;">
+        ${yrBack.map((b,i)=>yrHoleCell(b,i+10)).join('')}
+      </div>`;
+  }
+}
+function selectYear(y){selectedYear=y;renderYears();}
+
+function renderTrendCharts() {
+  const el = document.getElementById('year-trend-charts');
+  if(!el) return;
+  const years = [...new Set(rounds.map(r=>r.date.slice(0,4)))].sort();
+  if(years.length < 2){ el.style.display='none'; return; }
+  el.style.display = '';
+
+  const yrStats = y => rounds.filter(r=>r.date.startsWith(y)&&r.roundType!=='practice'&&r.roundType!=='tournament'&&r.roundType!=='othercourse');
+  const data = years.map(y => {
+    const yr = rounds.filter(r=>r.date.startsWith(y));
+    const stats = yrStats(y);
+    const full = stats.filter(r=>r.isFullRound);
+    const totalH = yr.reduce((a,r)=>a+r.holesPlayed,0);
+    const statH = stats.reduce((a,r)=>a+r.holesPlayed,0);
+    const birds = stats.reduce((a,r)=>a+r.birdies,0);
+    const avgScore = full.length ? parseFloat((full.reduce((a,r)=>a+r.total,0)/full.length).toFixed(1)) : null;
+    const pbPct = statH ? parseFloat((stats.reduce((a,r)=>a+r.parOrBetter,0)/statH*100).toFixed(1)) : null;
+    const dbPct = statH ? parseFloat((stats.reduce((a,r)=>a+r.doubles,0)/statH*100).toFixed(1)) : null;
+    const normR = statH/18;
+    const b18 = normR > 0 ? parseFloat((birds/normR).toFixed(2)) : null;
+    return { y, totalH, birds, avgScore, pbPct, dbPct, b18 };
+  });
+
+  const chartColor = '#378ADD';
+  const chartFill = 'rgba(55,138,221,0.08)';
+
+  function miniChart(id, label, values, yLabel, reverse) {
+    return `<div style="margin-bottom:20px;">
+      <div class="section-label" style="margin-bottom:8px;">${label}</div>
+      <div style="position:relative;height:110px;"><canvas id="${id}"></canvas></div>
+    </div>`;
+  }
+
+  el.innerHTML = `<div class="section-label" style="margin-bottom:16px;">Trends — all years</div>` +
+    miniChart('tc-holes','Holes per year', data.map(d=>d.totalH), 'Holes', false) +
+    miniChart('tc-birdies','Birdies per year', data.map(d=>d.birds), 'Birdies', false) +
+    miniChart('tc-pb','Par or better % per year', data.map(d=>d.pbPct), '%', false) +
+    miniChart('tc-db','Double bogey+ % per year', data.map(d=>d.dbPct), '%', false) +
+    miniChart('tc-avg','Average score per year', data.map(d=>d.avgScore), 'Score', false);
+
+  const labels = years;
+
+  function makeChart(id, values, reverse) {
+    const canvas = document.getElementById(id);
+    if(!canvas) return;
+    const validVals = values.filter(v=>v!=null);
+    const minV = Math.min(...validVals), maxV = Math.max(...validVals);
+    const pad = (maxV - minV) * 0.15 || 1;
+    if(window['_tc_'+id]) { try{window['_tc_'+id].destroy();}catch{} }
+    window['_tc_'+id] = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: values,
+          borderColor: chartColor,
+          backgroundColor: chartFill,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: chartColor,
+          tension: 0.3,
+          fill: true,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { ticks: { font: { size: 10 }, maxRotation: 45, autoSkip: false } },
+          y: {
+            reverse: reverse||false,
+            min: Math.max(0, minV - pad),
+            max: maxV + pad,
+            ticks: { font: { size: 10 } }
+          }
+        }
+      }
+    });
+  }
+
+  setTimeout(() => {
+    makeChart('tc-holes', data.map(d=>d.totalH), false);
+    makeChart('tc-birdies', data.map(d=>d.birds), false);
+    makeChart('tc-avg', data.map(d=>d.avgScore), false);
+    makeChart('tc-pb', data.map(d=>d.pbPct), false);
+    makeChart('tc-db', data.map(d=>d.dbPct), false);
+  }, 50);
+}
+
+function buildHoleGrid(id,start){const c=document.getElementById(id);c.innerHTML='';for(let i=start;i<start+9;i++){const d=document.createElement('div');d.className='hole-cell';d.innerHTML=`<div class="hole-num">${i+1}</div><div class="hole-par">p${PARS[i]}</div><input class="hole-input" type="number" min="1" max="15" id="h${i}" placeholder="—" oninput="updateScore(${i},this)" />`;c.appendChild(d);}}
+function colorClass(s,p){const d=s-p;return d<=-2?'eagle':d===-1?'birdie':d===0?'par':d===1?'bogey':'double';}
+function updateScore(i,el){const v=parseInt(el.value);el.className='hole-input'+(isNaN(v)?'':' '+colorClass(v,PARS[i]));recalcLog();}
+function recalcLog(){
+  const fmt=document.getElementById('round-format')?.value||'18';
+  let front=0,back=0,frontValid=true,backValid=true,b=0,p=0,d=0;
+  for(let i=0;i<9;i++){const v=parseInt(document.getElementById('h'+i)?.value);if(isNaN(v)){frontValid=false;continue;}front+=v;const diff=v-PARS[i];if(diff<=-1)b++;if(diff===0)p++;if(diff>=2)d++;}
+  for(let i=9;i<18;i++){const v=parseInt(document.getElementById('h'+i)?.value);if(isNaN(v)){backValid=false;continue;}back+=v;const diff=v-PARS[i];if(diff<=-1)b++;if(diff===0)p++;if(diff>=2)d++;}
+  document.getElementById('front-total').textContent=front||'—';
+  document.getElementById('back-total').textContent=back||'—';
+  const fd=front-33,bd=back-33;
+  document.getElementById('front-diff').textContent=front?(fd>0?'+'+fd:fd):'';
+  document.getElementById('back-diff').textContent=back?(bd>0?'+'+bd:bd):'';
+  const allValid=(fmt==='18'&&!frontValid===false&&!backValid===false)||(fmt==='front'&&frontValid&&front>0)||(fmt==='back'&&backValid&&back>0);
+  if(fmt==='18'&&!frontValid===false&&!backValid===false&&front>0&&back>0){const total=front+back,vp=total-66,tee=TEES[document.getElementById('round-tee').value],diff=((total-tee.rating)*113/tee.slope);document.getElementById('log-total').textContent=total;document.getElementById('log-vs-par').textContent=(vp>0?'+':'')+vp;document.getElementById('log-hdcp').textContent=diff.toFixed(1);}
+  else{document.getElementById('log-total').textContent=fmt==='front'&&front?front:fmt==='back'&&back?back:'—';document.getElementById('log-vs-par').textContent='—';document.getElementById('log-hdcp').textContent='—';}
+  document.getElementById('log-birdies').textContent=b;document.getElementById('log-pars').textContent=p;document.getElementById('log-doubles').textContent=d;
+}
+function updateLogFormat(){
+  const fmt=document.getElementById('round-format').value;
+  const frontCard=document.getElementById('front-grid').closest('.card');
+  const backCard=document.getElementById('back-grid').closest('.card');
+  const summaryCard=document.getElementById('log-total').closest('.card');
+  const holeCountCard=document.getElementById('hole-count-card');
+  const labelEl=document.getElementById('hole-count-label');
+  if(fmt==='practice'||fmt==='tournament'||fmt==='othercourse'){
+    frontCard.style.display='none';backCard.style.display='none';summaryCard.style.display='none';
+    holeCountCard.style.display='';
+    if(labelEl) labelEl.textContent=fmt==='practice'?'Practice holes':fmt==='tournament'?'Tournament holes':'Other Course';
+    const ncCheck=document.getElementById('new-course-check');
+    if(ncCheck) ncCheck.style.display=fmt==='othercourse'?'flex':'none';
+  } else {
+    holeCountCard.style.display='none';summaryCard.style.display='';
+    if(fmt==='18'){frontCard.style.display='';backCard.style.display='';}
+    else if(fmt==='front'){frontCard.style.display='';backCard.style.display='none';}
+    else{frontCard.style.display='none';backCard.style.display='';}
+  }
+  clearLog();
+}
+function saveRound(){
+  const date=document.getElementById('round-date').value;
+  if(!date){showToast('Please enter a date');return;}
+  const fmt=document.getElementById('round-format').value;
+  const tk=document.getElementById('round-tee').value,t=TEES[tk];
+
+  // Handle practice and tournament — hole count only
+  if(fmt==='practice'||fmt==='tournament'||fmt==='othercourse'){
+    const hc=parseInt(document.getElementById('hole-count-input').value);
+    if(isNaN(hc)||hc<1){showToast('Enter number of holes played');return;}
+    const isNew=fmt==='othercourse'&&document.getElementById('is-new-course')?.checked;
+    const r={id:Date.now()+Math.floor(Math.random()*10000),date,tee:tk,holes:Array(18).fill(null),front:null,back:null,total:null,isFullRound:false,hasFront:false,hasBack:false,diff:null,birdies:0,parOrBetter:0,doubles:0,holesPlayed:hc,roundType:fmt,isNewCourse:isNew||false};
+    const typeLabel=fmt==='practice'?'practice':fmt==='tournament'?'tournament':'other course';
+    rounds.unshift(r);saveToStorage();showToast('Logged '+hc+' '+typeLabel+' holes!');
+    document.getElementById('hole-count-input').value='';return;
+  }
+
+  let holes=Array(18).fill(null);
+  if(fmt==='18'){
+    let valid=true;
+    for(let i=0;i<18;i++){const v=parseInt(document.getElementById('h'+i)?.value);if(isNaN(v)||v<1){valid=false;break;}holes[i]=v;}
+    if(!valid){showToast('Enter all 18 hole scores');return;}
+  } else if(fmt==='front'){
+    let valid=true;
+    for(let i=0;i<9;i++){const v=parseInt(document.getElementById('h'+i)?.value);if(isNaN(v)||v<1){valid=false;break;}holes[i]=v;}
+    if(!valid){showToast('Enter all 9 front hole scores');return;}
+  } else {
+    let valid=true;
+    for(let i=9;i<18;i++){const v=parseInt(document.getElementById('h'+i)?.value);if(isNaN(v)||v<1){valid=false;break;}holes[i]=v;}
+    if(!valid){showToast('Enter all 9 back hole scores');return;}
+  }
+  const hasFront=fmt==='18'||fmt==='front';
+  const hasBack=fmt==='18'||fmt==='back';
+  const isFullRound=fmt==='18';
+  const front=hasFront?holes.slice(0,9).filter(v=>v!=null).reduce((a,b)=>a+b,0):null;
+  const back=hasBack?holes.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0):null;
+  const total=isFullRound?front+back:null;
+  const diff=isFullRound?parseFloat(((total-t.rating)*113/t.slope).toFixed(2)):null;
+  const holesPlayed=holes.filter(v=>v!=null).length;
+  const birdies=holes.filter((s,i)=>s!=null&&s-PARS[i]<=-1).length;
+  const parOrBetter=holes.filter((s,i)=>s!=null&&s-PARS[i]<=0).length;
+  const doubles=holes.filter((s,i)=>s!=null&&s-PARS[i]>=2).length;
+  const r={id:Date.now()+Math.floor(Math.random()*10000),date,tee:tk,holes,front,back,total,isFullRound,hasFront,hasBack,diff,birdies,parOrBetter,doubles,holesPlayed};
+  rounds.unshift(r);saveToStorage();showToast('Round saved!');clearLog();
+}
+function clearLog(){for(let i=0;i<18;i++){const el=document.getElementById('h'+i);if(el){el.value='';el.className='hole-input';}}recalcLog();['log-birdies','log-pars','log-doubles'].forEach(id=>document.getElementById(id).textContent='0');}
+function renderGoalsTable(){
+  const tbody = document.getElementById('goals-table-body');
+  if(!tbody) return;
+
+  // General goals — check against current 2026 stats
+  const currentYear = '2026';
+  const yrRounds = rounds.filter(r=>r.date.startsWith(currentYear));
+  const yrStats = yrRounds.filter(r=>r.roundType!=='practice'&&r.roundType!=='tournament'&&r.roundType!=='othercourse');
+  const statH = yrStats.reduce((a,r)=>a+r.holesPlayed,0);
+  const birds = yrStats.reduce((a,r)=>a+r.birdies,0);
+  const normR = statH/18;
+  const b18 = normR>0 ? (birds/normR) : 0;
+  const pbPct = statH ? (yrStats.reduce((a,r)=>a+r.parOrBetter,0)/statH*100) : 0;
+  const dbPct = statH ? (yrStats.reduce((a,r)=>a+r.doubles,0)/statH*100) : 0;
+  const otherCourses = yrRounds.filter(r=>r.roundType==='othercourse'&&r.isNewCourse===true).length;
+
+  const generalGoals = [
+    { label: 'New courses played', current: otherCourses, target: 5, unit: '', higherBetter: true, met: otherCourses >= 5 },
+    { label: 'Birdies per 18', current: b18.toFixed(2), target: '1.10', unit: '', higherBetter: true, met: b18 >= 1.10 },
+    { label: 'Par or better %', current: pbPct.toFixed(1)+'%', target: '50%', unit: '', higherBetter: true, met: pbPct >= 50 },
+    { label: 'Double bogey or worse %', current: dbPct.toFixed(1)+'%', target: '10%', unit: '', higherBetter: false, met: dbPct <= 10 },
+  ];
+
+  const generalEl = document.getElementById('general-goals-list');
+  if(generalEl) {
+    generalEl.innerHTML = generalGoals.map(g => {
+      const color = g.met ? 'var(--green)' : 'var(--red)';
+      const icon = g.met ? '✓' : '✗';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div><span style="color:${color};font-weight:600;margin-right:8px;">${icon}</span>${g.label}</div>
+        <div style="text-align:right;">
+          <span style="font-weight:600;color:${color};">${g.current}</span>
+          <span style="color:var(--text-3);font-size:11px;margin-left:6px;">goal: ${g.higherBetter?'≥':'≤'} ${g.target}</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Hole stats goals — 2026 only
+  const g2026 = GOALS['2026'];
+  const parLabels = {3:'Par 3s', 4:'Par 4s', 5:'Par 5s'};
+  tbody.innerHTML = [3,4,5].map((pt,i) => {
+    const g = g2026[pt];
+    const borderBottom = i===2 ? 'none' : '1px solid var(--border)';
+    return `<tr style="border-bottom:${borderBottom};">
+      <td style="padding:6px 8px;color:var(--text-2);">${parLabels[pt]}</td>
+      <td style="text-align:center;padding:6px 8px;color:var(--green);">≤ +${g.green.toFixed(2)}</td>
+      <td style="text-align:center;padding:6px 8px;color:var(--amber);">+${(g.green+0.01).toFixed(2)} – +${g.yellow.toFixed(2)}</td>
+      <td style="text-align:center;padding:6px 8px;color:var(--red);">≥ +${(g.yellow+0.01).toFixed(2)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saveGhin(v){try{localStorage.setItem('zc_ghin',v);}catch{}}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+document.getElementById('round-date').value=new Date().toISOString().slice(0,10);
+buildHoleGrid('front-grid',0);
+buildHoleGrid('back-grid',9);
+renderDashboard();
+</script>
+</body>
+</html>
