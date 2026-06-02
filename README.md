@@ -1,4 +1,4 @@
-[index.html](https://github.com/user-attachments/files/28528516/index.html)
+[index.html](https://github.com/user-attachments/files/28528602/index.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,31 +132,31 @@
 </style>
 </head>
 <body>
-<div class="pin-overlay" id="pin-overlay">
-  <div class="pin-box">
-    <div class="pin-title">⛳ Zintel Creek</div>
-    <div class="pin-sub">Enter your PIN to continue</div>
-    <div class="pin-dots" id="pin-dots">
-      <div class="pin-dot" id="pd0"></div>
-      <div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div>
-      <div class="pin-dot" id="pd3"></div>
+<div id="pin-overlay" style="position:fixed;inset:0;background:#f7f6f2;display:flex;align-items:center;justify-content:center;z-index:99999;">
+  <div style="text-align:center;padding:2rem 1rem;width:100%;max-width:320px;">
+    <div style="font-size:24px;font-weight:600;color:#1a1a18;margin-bottom:6px;">⛳ Zintel Creek</div>
+    <div style="font-size:14px;color:#9a9a93;margin-bottom:32px;">Enter your PIN to continue</div>
+    <div style="display:flex;gap:16px;justify-content:center;margin-bottom:36px;">
+      <div id="pd0" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd1" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd2" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd3" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
     </div>
-    <div class="pin-pad">
-      <button class="pin-btn" onclick="pinPress('1')">1</button>
-      <button class="pin-btn" onclick="pinPress('2')">2</button>
-      <button class="pin-btn" onclick="pinPress('3')">3</button>
-      <button class="pin-btn" onclick="pinPress('4')">4</button>
-      <button class="pin-btn" onclick="pinPress('5')">5</button>
-      <button class="pin-btn" onclick="pinPress('6')">6</button>
-      <button class="pin-btn" onclick="pinPress('7')">7</button>
-      <button class="pin-btn" onclick="pinPress('8')">8</button>
-      <button class="pin-btn" onclick="pinPress('9')">9</button>
-      <button class="pin-btn" onclick="pinClear()" style="font-size:14px;">⌫</button>
-      <button class="pin-btn" onclick="pinPress('0')">0</button>
-      <button class="pin-btn" onclick="pinClear()" style="font-size:14px; opacity:0; pointer-events:none;"></button>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:280px;margin:0 auto;">
+      <button onclick="pinPress('1')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">1</button>
+      <button onclick="pinPress('2')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">2</button>
+      <button onclick="pinPress('3')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">3</button>
+      <button onclick="pinPress('4')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">4</button>
+      <button onclick="pinPress('5')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">5</button>
+      <button onclick="pinPress('6')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">6</button>
+      <button onclick="pinPress('7')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">7</button>
+      <button onclick="pinPress('8')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">8</button>
+      <button onclick="pinPress('9')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">9</button>
+      <button onclick="pinClear()" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:22px;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">⌫</button>
+      <button onclick="pinPress('0')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">0</button>
+      <div style="width:80px;height:80px;margin:0 auto;"></div>
     </div>
-    <div class="pin-error" id="pin-error"></div>
+    <div id="pin-error" style="color:#E24B4A;font-size:13px;margin-top:16px;height:18px;"></div>
   </div>
 </div>
 
@@ -1505,7 +1505,7 @@ function pinClear() {
 
 function updatePinDots() {
   for(let i=0;i<4;i++) {
-    document.getElementById('pd'+i).classList.toggle('filled', i < pinEntry.length);
+    const dot=document.getElementById('pd'+i); dot.style.background=i<pinEntry.length?'#1a1a18':'transparent'; dot.style.borderColor=i<pinEntry.length?'#1a1a18':'#9a9a93';
   }
 }
 
