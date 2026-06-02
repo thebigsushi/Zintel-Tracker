@@ -1,4 +1,4 @@
-[index.html.html](https://github.com/user-attachments/files/28528168/index.html.html)
+[index.html.html](https://github.com/user-attachments/files/28528252/index.html.html)
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -132,7 +132,35 @@
 </style>
 </head>
 <body>
-<div class="container">
+<div class="pin-overlay" id="pin-overlay">
+  <div class="pin-box">
+    <div class="pin-title">⛳ Zintel Creek</div>
+    <div class="pin-sub">Enter your PIN to continue</div>
+    <div class="pin-dots" id="pin-dots">
+      <div class="pin-dot" id="pd0"></div>
+      <div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div>
+      <div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-pad">
+      <button class="pin-btn" onclick="pinPress('1')">1</button>
+      <button class="pin-btn" onclick="pinPress('2')">2</button>
+      <button class="pin-btn" onclick="pinPress('3')">3</button>
+      <button class="pin-btn" onclick="pinPress('4')">4</button>
+      <button class="pin-btn" onclick="pinPress('5')">5</button>
+      <button class="pin-btn" onclick="pinPress('6')">6</button>
+      <button class="pin-btn" onclick="pinPress('7')">7</button>
+      <button class="pin-btn" onclick="pinPress('8')">8</button>
+      <button class="pin-btn" onclick="pinPress('9')">9</button>
+      <button class="pin-btn" onclick="pinClear()" style="font-size:14px;">⌫</button>
+      <button class="pin-btn" onclick="pinPress('0')">0</button>
+      <button class="pin-btn" onclick="pinClear()" style="font-size:14px; opacity:0; pointer-events:none;"></button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+</div>
+
+<div class="container" id="main-container" style="display:none;">
   <div class="header">
     <h1>⛳ Zintel Creek Golf Tracker</h1>
     <p>Kennewick, WA · Par 66 · Member app</p>
@@ -284,6 +312,7 @@
       </div>
     </div>
   </div>
+</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1454,6 +1483,51 @@ function renderGoalsTable(){
 
 function saveGhin(v){try{localStorage.setItem('zc_ghin',v);}catch{}}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+// PIN logic
+const CORRECT_PIN = '2243';
+let pinEntry = '';
+
+function pinPress(d) {
+  if(pinEntry.length >= 4) return;
+  pinEntry += d;
+  updatePinDots();
+  if(pinEntry.length === 4) {
+    setTimeout(() => checkPin(), 150);
+  }
+}
+
+function pinClear() {
+  pinEntry = pinEntry.slice(0, -1);
+  updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updatePinDots() {
+  for(let i=0;i<4;i++) {
+    document.getElementById('pd'+i).classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+function checkPin() {
+  if(pinEntry === CORRECT_PIN) {
+    document.getElementById('pin-overlay').style.display = 'none';
+    document.getElementById('main-container').style.display = 'block';
+    try { sessionStorage.setItem('zc_auth','1'); } catch {}
+  } else {
+    pinEntry = '';
+    updatePinDots();
+    document.getElementById('pin-error').textContent = 'Incorrect PIN — try again';
+  }
+}
+
+// Check if already authenticated this session
+try {
+  if(sessionStorage.getItem('zc_auth')==='1') {
+    document.getElementById('pin-overlay').style.display='none';
+    document.getElementById('main-container').style.display='block';
+  }
+} catch {}
 
 document.getElementById('round-date').value=new Date().toISOString().slice(0,10);
 buildHoleGrid('front-grid',0);
