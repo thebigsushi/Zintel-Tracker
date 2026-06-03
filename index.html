@@ -162,7 +162,7 @@
 <div class="container" id="main-container" style="display:none;">
   <div class="header">
     <h1>⛳ Zintel Creek Golf Tracker</h1>
-    <p>Kennewick, WA · Par 66 · Member App</p>
+    <p>Kennewick, WA · Par 66 · Member app</p>
   </div>
   <div class="nav">
     <button class="active" onclick="showSection('dashboard',this)"><i class="ti ti-chart-bar"></i> Dashboard</button>
@@ -844,7 +844,7 @@ function saveEdit(id) {
   });
   r.holes = newHoles;
   recalcRound(r);
-  saveToStorage();
+  updateInDB(r);
   renderHistory();
   showToast('Round updated!');
   // Re-open expanded
@@ -951,11 +951,10 @@ function deleteRound(id){
   if(!confirm('Delete this round?'))return;
   const idx=rounds.findIndex(r=>String(r.id)===String(id));
   if(idx===-1){
-    // fallback: try numeric comparison
     const idx2=rounds.findIndex(r=>Math.round(r.id)===Math.round(Number(id)));
-    if(idx2!==-1) rounds.splice(idx2,1);
+    if(idx2!==-1){ deleteFromDB(rounds[idx2].id); rounds.splice(idx2,1); }
   } else {
-    rounds.splice(idx,1);
+    deleteFromDB(rounds[idx].id); rounds.splice(idx,1);
   }
   saveToStorage();renderHistory();showToast('Round deleted');
 }
@@ -1394,7 +1393,7 @@ function saveRound(){
     const isNew=fmt==='othercourse'&&document.getElementById('is-new-course')?.checked;
     const r={id:Date.now()+Math.floor(Math.random()*10000),date,tee:tk,holes:Array(18).fill(null),front:null,back:null,total:null,isFullRound:false,hasFront:false,hasBack:false,diff:null,birdies:0,parOrBetter:0,doubles:0,holesPlayed:hc,roundType:fmt,isNewCourse:isNew||false};
     const typeLabel=fmt==='practice'?'practice':fmt==='tournament'?'tournament':'other course';
-    rounds.unshift(r);saveToStorage();showToast('Logged '+hc+' '+typeLabel+' holes!');
+    rounds.unshift(r);saveToStorage(r);showToast('Logged '+hc+' '+typeLabel+' holes!');
     document.getElementById('hole-count-input').value='';return;
   }
 
@@ -1424,7 +1423,7 @@ function saveRound(){
   const parOrBetter=holes.filter((s,i)=>s!=null&&s-PARS[i]<=0).length;
   const doubles=holes.filter((s,i)=>s!=null&&s-PARS[i]>=2).length;
   const r={id:Date.now()+Math.floor(Math.random()*10000),date,tee:tk,holes,front,back,total,isFullRound,hasFront,hasBack,diff,birdies,parOrBetter,doubles,holesPlayed};
-  rounds.unshift(r);saveToStorage();showToast('Round saved!');clearLog();
+  rounds.unshift(r);saveToStorage(r);showToast('Round saved!');clearLog();
 }
 function clearLog(){for(let i=0;i<18;i++){const el=document.getElementById('h'+i);if(el){el.value='';el.className='hole-input';}}recalcLog();['log-birdies','log-pars','log-doubles'].forEach(id=>document.getElementById(id).textContent='0');}
 function renderGoalsTable(){
@@ -1513,6 +1512,7 @@ function checkPin() {
     document.getElementById('pin-overlay').style.display = 'none';
     document.getElementById('main-container').style.display = 'block';
     try { sessionStorage.setItem('zc_auth','1'); } catch {}
+    loadFromDB();
   } else {
     pinEntry = '';
     updatePinDots();
@@ -1525,6 +1525,7 @@ try {
   if(sessionStorage.getItem('zc_auth')==='1') {
     document.getElementById('pin-overlay').style.display='none';
     document.getElementById('main-container').style.display='block';
+    loadFromDB();
   }
 } catch {}
 
