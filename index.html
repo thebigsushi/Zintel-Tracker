@@ -723,9 +723,58 @@ const EXTRA_ROUNDS = [
 ];
 
 let rounds = [...HARDCODED.map(buildRound), ...EXTRA_ROUNDS];
-try { const s=JSON.parse(localStorage.getItem('zc_rounds_v34')||'null'); if(s&&s.length) rounds=s.map(r=>recalcRound(r)); } catch {}
+// Supabase config
+const SUPABASE_URL = 'https://wiptjvvvghavqiipghuw.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndpcHRqdnZ2Z2hhdnFpaXBnaHV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0MzU0OTEsImV4cCI6MjA5NjAxMTQ5MX0.Oo8kQSTzFsNQkRmSL_6IlXtYBGOYp4OoCCj1Wle8kwc';
+
+function roundToRow(r) {
+  return { id:r.id, date:r.date, tee:r.tee, holes:r.holes, front:r.front, back:r.back, total:r.total, is_full_round:r.isFullRound, has_front:r.hasFront, has_back:r.hasBack, diff:r.diff, birdies:r.birdies, par_or_better:r.parOrBetter, doubles:r.doubles, holes_played:r.holesPlayed, eagles:r.eagles||0, hios:r.hios||0, round_type:r.roundType||null, is_new_course:r.isNewCourse||false };
+}
+
+function rowToRound(row) {
+  return recalcRound({ id:row.id, date:row.date, tee:row.tee, holes:row.holes, front:row.front, back:row.back, total:row.total, isFullRound:row.is_full_round, hasFront:row.has_front, hasBack:row.has_back, diff:row.diff, birdies:row.birdies, parOrBetter:row.par_or_better, doubles:row.doubles, holesPlayed:row.holes_played, eagles:row.eagles||0, hios:row.hios||0, roundType:row.round_type||null, isNewCourse:row.is_new_course||false });
+}
+
+let dbLoaded = false;
+
+async function loadFromDB() {
+  try {
+    showToast('Connecting to cloud...');
+    const res = await fetch(SUPABASE_URL+'/rest/v1/rounds?select=*&order=date.desc&limit=2000', { headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY} });
+    if(!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    console.log('DB rows:', rows.length);
+    if(rows && rows.length > 0) { rounds=rows.map(rowToRound); dbLoaded=true; renderDashboard(); showToast('Loaded '+rows.length+' rounds ☁️'); }
+    else { await seedDB(); }
+  } catch(e) { console.error('DB load failed:',e); showToast('DB error: '+e.message); }
+}
+
+async function seedDB() {
+  try {
+    const all = [...HARDCODED.map(buildRound), ...EXTRA_ROUNDS];
+    const rows = all.map(roundToRow);
+    showToast('Seeding '+rows.length+' rounds...');
+    for(let i=0;i<rows.length;i+=50) {
+      const res = await fetch(SUPABASE_URL+'/rest/v1/rounds', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'resolution=ignore-duplicates,return=minimal'}, body:JSON.stringify(rows.slice(i,i+50)) });
+      if(!res.ok) { const e=await res.text(); console.error('Batch failed:',e); showToast('Error: '+e.slice(0,60)); return; }
+    }
+    rounds=all; dbLoaded=true; showToast('Seeded! ✅ '+rows.length+' rounds'); renderDashboard();
+  } catch(e) { console.error('Seed failed:',e); showToast('Seed error: '+e.message); }
+}
+
+async function saveToStorage(round) {
+  if(dbLoaded && round) { try { await fetch(SUPABASE_URL+'/rest/v1/rounds', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify(roundToRow(round)) }); } catch(e) { console.error('Save failed:',e); } }
+}
+
+async function deleteFromDB(id) {
+  if(dbLoaded) { try { await fetch(SUPABASE_URL+'/rest/v1/rounds?id=eq.'+id, { method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY} }); } catch(e) { console.error('Delete failed:',e); } }
+}
+
+async function updateInDB(round) {
+  if(dbLoaded) { try { await fetch(SUPABASE_URL+'/rest/v1/rounds?id=eq.'+round.id, { method:'PATCH', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY}, body:JSON.stringify(roundToRow(round)) }); } catch(e) { console.error('Update failed:',e); } }
+}
+
 cleanupRounds();
-function saveToStorage(){try{localStorage.setItem('zc_rounds_v34',JSON.stringify(rounds));}catch{}}
 
 function cleanupRounds(){
   rounds=rounds.filter(r=>{
