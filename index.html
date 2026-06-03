@@ -676,7 +676,8 @@ function buildRound(raw) {
   let birdies=0,parOrBetter=0,doubles=0,holesPlayed=0,eagles=0,hios=0;
   h.forEach((s,i)=>{ if(s==null)return; holesPlayed++; const d=s-PARS[i]; if(s===1)hios++; else if(d<=-2)eagles++; else if(d===-1)birdies++; if(d<=0)parOrBetter++; if(d>=2)doubles++; });
   const diff = isFullRound ? parseFloat(((total-TEES[tee].rating)*113/TEES[tee].slope).toFixed(2)) : null;
-  return { id: Date.now()+Math.floor(Math.random()*10000), date, tee, holes:h, front, back, total, isFullRound, hasFront, hasBack, diff, birdies, parOrBetter, doubles, holesPlayed, eagles, hios };
+  const rid = parseInt(date.replace(/-/g,'')) * 10000 + Math.floor(Math.random()*9999);
+  return { id: rid, date, tee, holes:h, front, back, total, isFullRound, hasFront, hasBack, diff, birdies, parOrBetter, doubles, holesPlayed, eagles, hios };
 }
 
 const EXTRA_ROUNDS = [
@@ -951,7 +952,7 @@ function deleteRound(id){
   if(!confirm('Delete this round?'))return;
   const idx=rounds.findIndex(r=>String(r.id)===String(id));
   if(idx===-1){
-    const idx2=rounds.findIndex(r=>Math.round(r.id)===Math.round(Number(id)));
+    const idx2=rounds.findIndex(r=>Number(r.id)===Number(id));
     if(idx2!==-1){ deleteFromDB(rounds[idx2].id); rounds.splice(idx2,1); }
   } else {
     deleteFromDB(rounds[idx].id); rounds.splice(idx,1);
@@ -1391,7 +1392,7 @@ function saveRound(){
     const hc=parseInt(document.getElementById('hole-count-input').value);
     if(isNaN(hc)||hc<1){showToast('Enter number of holes played');return;}
     const isNew=fmt==='othercourse'&&document.getElementById('is-new-course')?.checked;
-    const r={id:Date.now()+Math.floor(Math.random()*10000),date,tee:tk,holes:Array(18).fill(null),front:null,back:null,total:null,isFullRound:false,hasFront:false,hasBack:false,diff:null,birdies:0,parOrBetter:0,doubles:0,holesPlayed:hc,roundType:fmt,isNewCourse:isNew||false};
+    const r={id:parseInt(date.replace(/-/g,''))*10000+Math.floor(Math.random()*9999),date,tee:tk,holes:Array(18).fill(null),front:null,back:null,total:null,isFullRound:false,hasFront:false,hasBack:false,diff:null,birdies:0,parOrBetter:0,doubles:0,holesPlayed:hc,roundType:fmt,isNewCourse:isNew||false};
     const typeLabel=fmt==='practice'?'practice':fmt==='tournament'?'tournament':'other course';
     rounds.unshift(r);saveToStorage(r);showToast('Logged '+hc+' '+typeLabel+' holes!');
     document.getElementById('hole-count-input').value='';return;
