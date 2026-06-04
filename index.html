@@ -796,7 +796,7 @@ function recalcRound(r) {
   r.back = r.hasBack ? h.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
   r.total = r.isFullRound ? r.front+r.back : null;
   r.birdies=0; r.parOrBetter=0; r.doubles=0; r.holesPlayed=0; r.eagles=0; r.hios=0;
-  h.forEach((s,i)=>{ if(s==null)return; r.holesPlayed++; const d=s-PARS[i]; if(d<=-1)r.birdies++; if(d<=0)r.parOrBetter++; if(d>=2)r.doubles++; if(d<=-2)r.eagles++; if(s===1)r.hios++; });
+  h.forEach((s,i)=>{ if(s==null)return; r.holesPlayed++; const d=s-PARS[i]; if(s===1)r.hios++; else if(d<=-2)r.eagles++; else if(d===-1)r.birdies++; if(d<=0)r.parOrBetter++; if(d>=2)r.doubles++; });
   r.diff = r.isFullRound ? parseFloat(((r.total-TEES[r.tee].rating)*113/TEES[r.tee].slope).toFixed(2)) : null;
   return r;
 }
