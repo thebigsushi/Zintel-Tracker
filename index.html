@@ -1533,6 +1533,15 @@ function renderGoalsTable(){
 function saveGhin(v){try{localStorage.setItem('zc_ghin',v);}catch{}}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
+// PIN keyboard support
+document.addEventListener('keydown', function(e) {
+  const overlay = document.getElementById('pin-overlay');
+  if(!overlay || overlay.style.display === 'none') return;
+  if(e.key >= '0' && e.key <= '9') pinPress(e.key);
+  else if(e.key === 'Backspace') pinClear();
+  else if(e.key === 'Enter' && pinEntry.length === 4) checkPin();
+});
+
 // PIN logic
 const CORRECT_PIN = '2243';
 let pinEntry = '';
