@@ -18,8 +18,8 @@
     --blue: #2d7d35; --blue-light: #1e5225; --blue-mid: #3da345;
     --radius: 8px; --radius-lg: 12px;
   }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; justify-content: center; padding: 0; }
+  .container { max-width: 720px; width: 100%; padding: 24px 16px; } @media (min-width: 768px) { .container { background: #253f27; border-radius: 0; min-height: 100vh; padding: 24px 24px; } }
   .header { margin-bottom: 20px; }
   .header h1 { font-size: 20px; font-weight: 600; }
   .header p { font-size: 13px; color: var(--text-2); margin-top: 3px; }
@@ -131,26 +131,26 @@
 <body>
 <div id="pin-overlay" style="position:fixed;inset:0;background:#1e3a20;display:flex;align-items:center;justify-content:center;z-index:99999;">
   <div style="text-align:center;padding:2rem 1rem;width:100%;max-width:320px;">
-    <div style="font-size:24px;font-weight:600;color:#1a1a18;margin-bottom:6px;">⛳ Zintel Creek</div>
-    <div style="font-size:14px;color:#9a9a93;margin-bottom:32px;">Enter your PIN to continue</div>
+    <div style="font-size:24px;font-weight:600;color:#eaf4ea;margin-bottom:6px;">⛳ Zintel Creek</div>
+    <div style="font-size:14px;color:#93bf93;margin-bottom:32px;">Enter your PIN to continue</div>
     <div style="display:flex;gap:16px;justify-content:center;margin-bottom:36px;">
-      <div id="pd0" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
-      <div id="pd1" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
-      <div id="pd2" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
-      <div id="pd3" style="width:16px;height:16px;border-radius:50%;border:2px solid #9a9a93;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd0" style="width:16px;height:16px;border-radius:50%;border:2px solid #6a996a;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd1" style="width:16px;height:16px;border-radius:50%;border:2px solid #6a996a;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd2" style="width:16px;height:16px;border-radius:50%;border:2px solid #6a996a;background:transparent;transition:background 0.15s;"></div>
+      <div id="pd3" style="width:16px;height:16px;border-radius:50%;border:2px solid #6a996a;background:transparent;transition:background 0.15s;"></div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;max-width:280px;margin:0 auto;">
-      <button onclick="pinPress('1')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">1</button>
-      <button onclick="pinPress('2')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">2</button>
-      <button onclick="pinPress('3')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">3</button>
-      <button onclick="pinPress('4')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">4</button>
-      <button onclick="pinPress('5')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">5</button>
-      <button onclick="pinPress('6')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">6</button>
-      <button onclick="pinPress('7')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">7</button>
-      <button onclick="pinPress('8')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">8</button>
-      <button onclick="pinPress('9')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">9</button>
-      <button onclick="pinClear()" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:22px;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">⌫</button>
-      <button onclick="pinPress('0')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#fff;font-size:28px;font-weight:400;color:#1a1a18;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">0</button>
+      <button onclick="pinPress('1')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">1</button>
+      <button onclick="pinPress('2')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">2</button>
+      <button onclick="pinPress('3')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">3</button>
+      <button onclick="pinPress('4')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">4</button>
+      <button onclick="pinPress('5')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">5</button>
+      <button onclick="pinPress('6')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">6</button>
+      <button onclick="pinPress('7')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">7</button>
+      <button onclick="pinPress('8')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">8</button>
+      <button onclick="pinPress('9')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">9</button>
+      <button onclick="pinClear()" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:22px;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">⌫</button>
+      <button onclick="pinPress('0')" style="width:80px;height:80px;border-radius:50%;border:1px solid #ccc;background:#253f27;font-size:28px;font-weight:400;color:#eaf4ea;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;">0</button>
       <div style="width:80px;height:80px;margin:0 auto;"></div>
     </div>
     <div id="pin-error" style="color:#E24B4A;font-size:13px;margin-top:16px;height:18px;"></div>
