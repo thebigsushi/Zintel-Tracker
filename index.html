@@ -1533,6 +1533,13 @@ function renderGoalsTable(){
 function saveGhin(v){try{localStorage.setItem('zc_ghin',v);}catch{}}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
+// Prevent iOS double-tap zoom on PIN buttons
+document.addEventListener('touchend', function(e) {
+  const overlay = document.getElementById('pin-overlay');
+  if(!overlay || overlay.style.display === 'none') return;
+  e.preventDefault();
+}, { passive: false });
+
 // PIN keyboard support
 document.addEventListener('keydown', function(e) {
   const overlay = document.getElementById('pin-overlay');
