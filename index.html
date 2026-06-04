@@ -157,10 +157,25 @@
   </div>
 </div>
 
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+<div id="drawer" style="position:fixed;top:0;left:0;height:100%;width:260px;background:#162e18;z-index:1001;transform:translateX(-100%);transition:transform 0.25s ease;display:flex;flex-direction:column;">
+  <div style="padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+    <div style="font-size:13px;font-weight:600;color:#6a996a;text-transform:uppercase;letter-spacing:0.06em;">Zintel Creek</div>
+    <div style="font-size:11px;color:#4a704a;margin-top:3px;">Golf Tracker</div>
+  </div>
+  <div id="mode-stats" onclick="switchMode('stats')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;color:#eaf4ea;cursor:pointer;background:#2d7d35;border-bottom:1px solid rgba(255,255,255,0.06);">
+    &#9965; My Stats
+  </div>
+  <div id="mode-league" onclick="switchMode('league')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;color:#93bf93;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">
+    &#127942; Thursday League
+  </div>
+</div>
 <div class="container" id="main-container" style="display:none;">
-  <div class="header">
-    <h1>⛳ Zintel Creek Golf Tracker</h1>
-    <p>Kennewick, WA · Par 66 · Member app</p>
+  <div id="stats-mode">
+  <div class="header" style="display:flex;align-items:center;gap:10px;">
+    <button class="hamburger" onclick="openDrawer()" aria-label="Menu" style="font-size:22px;line-height:1;color:#93bf93;background:none;border:none;cursor:pointer;padding:0;margin-top:2px;flex-shrink:0;align-self:center;">&#9776;</button>
+    <div><h1>⛳ Zintel Creek Golf Tracker</h1>
+    <p>Kennewick, WA · Par 66 · Member app</p></div>
   </div>
   <div class="nav">
     <button class="active" onclick="showSection('dashboard',this)"><i class="ti ti-chart-bar"></i> Dashboard</button>
@@ -309,7 +324,83 @@
       </div>
     </div>
   </div>
-</div>
+  </div><!-- end stats-mode -->
+  <!-- LEAGUE MODE -->
+  <div id="league-mode" style="display:none;">
+    <div class="header" style="display:flex;align-items:center;gap:10px;">
+      <button onclick="openDrawer()" aria-label="Menu" style="font-size:22px;line-height:1;color:#93bf93;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;">&#9776;</button>
+      <div><h1>⛳ Thursday League</h1><p style="font-size:13px;color:var(--text-2);margin-top:3px;">Zintel Creek · 2026 Season</p></div>
+    </div>
+    <div class="nav" id="league-nav">
+      <button class="active" onclick="showLeagueSection('league-dashboard',this)"><i class="ti ti-chart-bar"></i> Dashboard</button>
+      <button onclick="showLeagueSection('league-log',this)"><i class="ti ti-plus"></i> Log Week</button>
+      <button onclick="showLeagueSection('league-season',this)"><i class="ti ti-calendar"></i> Season</button>
+      <button onclick="showLeagueSection('league-best8',this)"><i class="ti ti-star"></i> Best 8</button>
+    </div>
+
+    <div id="league-dashboard" class="section active">
+      <div class="metric-grid" id="league-dash-metrics"></div>
+      <div class="card" id="league-best8-tracker"></div>
+      <div class="card" id="league-recent-weeks"></div>
+    </div>
+
+    <div id="league-log" class="section">
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px;">Week details</div>
+        <div class="form-row"><label>Week</label>
+          <select id="lg-week"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Playoff Week 1</option><option value="16">Playoff Week 2</option><option value="17">Playoff Week 3</option></select>
+        </div>
+        <div class="form-row"><label>Date</label><input type="date" id="lg-date" /></div>
+        <div class="form-row"><label>Playoff</label><input type="checkbox" id="lg-playoff" style="width:18px;height:18px;" onchange="togglePlayoff()" /></div>
+      </div>
+      <div class="card" id="lg-points-card">
+        <div class="section-label" style="margin-bottom:12px;">Points</div>
+        <div class="form-row"><label style="min-width:130px;">Gross hole pts</label><input type="number" id="lg-gross-hole" min="0" max="9" step="0.5" placeholder="0–9" style="width:80px;" /></div>
+        <div class="form-row"><label style="min-width:130px;">Net hole pts</label><input type="number" id="lg-net-hole" min="0" max="9" step="0.5" placeholder="0–9" style="width:80px;" /></div>
+        <div class="form-row"><label style="min-width:130px;">Gross match pts</label>
+          <select id="lg-gross-match" style="width:80px;">
+            <option value="0">0 (loss)</option>
+            <option value="5">5 (split)</option>
+            <option value="10">10 (win)</option>
+          </select>
+        </div>
+        <div class="form-row"><label style="min-width:130px;">Net match pts</label>
+          <select id="lg-net-match" style="width:80px;">
+            <option value="0">0 (loss)</option>
+            <option value="5">5 (split)</option>
+            <option value="10">10 (win)</option>
+          </select>
+        </div>
+        <div style="padding:8px 0;border-top:1px solid var(--border);margin-top:4px;font-size:13px;color:var(--text-2);">Total points: <strong id="lg-total-pts" style="color:var(--text);">0</strong> / 38</div>
+      </div>
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px;">Scores</div>
+        <div class="form-row"><label style="min-width:130px;">Gross score</label><input type="number" id="lg-gross-score" min="27" max="70" placeholder="Team gross" style="width:80px;" /></div>
+        <div class="form-row"><label style="min-width:130px;">Net score</label><input type="number" id="lg-net-score" min="20" max="70" placeholder="Team net" style="width:80px;" /></div>
+      </div>
+      <div class="card">
+        <div class="section-label" style="margin-bottom:12px;">Skins</div>
+        <div class="form-row"><label style="min-width:130px;">Gross skins won</label><input type="number" id="lg-gross-skins" min="0" max="9" placeholder="0" style="width:80px;" /></div>
+        <div class="form-row"><label style="min-width:130px;">Net skins won</label><input type="number" id="lg-net-skins" min="0" max="9" placeholder="0" style="width:80px;" /></div>
+        <div class="form-row"><label style="min-width:130px;">Cash won ($)</label><input type="number" id="lg-cash-won" min="0" placeholder="0" style="width:80px;" /></div>
+        <div style="padding:8px 0;border-top:1px solid var(--border);margin-top:4px;font-size:12px;color:var(--text-3);">Net profit = cash won − $20 entry</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" onclick="saveLeagueWeek()">Save week</button>
+        <button class="btn-secondary" onclick="clearLeagueLog()">Clear</button>
+      </div>
+    </div>
+
+    <div id="league-season" class="section">
+      <div class="card" id="league-season-table"></div>
+    </div>
+
+    <div id="league-best8" class="section">
+      <div class="card" id="league-best8-gross"></div>
+      <div class="card" id="league-best8-net"></div>
+    </div>
+  </div>
+
 </div>
 <div class="toast" id="toast"></div>
 
@@ -1602,7 +1693,228 @@ try {
   }
 } catch {}
 
+
+// ========== LEAGUE MODE ==========
+
+const CANCELLED_WEEKS = [7]; // weeks cancelled due to weather etc
+
+const LEAGUE_HARDCODED = [
+  {id:202604090001, week:1, date:'2026-04-09', isPlayoff:false, grossScore:35, netScore:29, grossHole:6.5, netHole:6, grossMatch:10, netMatch:10, totalPts:32.5, grossSkins:2, netSkins:1, cashWon:246, netProfit:226},
+  {id:202604230001, week:2, date:'2026-04-23', isPlayoff:false, grossScore:36, netScore:31, grossHole:4.5, netHole:3, grossMatch:5, netMatch:0, totalPts:12.5, grossSkins:1, netSkins:1, cashWon:108, netProfit:88},
+  {id:202604300001, week:3, date:'2026-04-30', isPlayoff:false, grossScore:39, netScore:33, grossHole:8, netHole:8, grossMatch:10, netMatch:10, totalPts:36, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
+  {id:202605070001, week:4, date:'2026-05-07', isPlayoff:false, grossScore:39, netScore:34, grossHole:4.5, netHole:3.5, grossMatch:5, netMatch:0, totalPts:13, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
+  {id:202605140001, week:5, date:'2026-05-14', isPlayoff:false, grossScore:40, netScore:35, grossHole:7.5, netHole:6.5, grossMatch:10, netMatch:10, totalPts:34, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
+  {id:202605210001, week:6, date:'2026-05-21', isPlayoff:false, grossScore:37, netScore:34, grossHole:5.5, netHole:5, grossMatch:10, netMatch:10, totalPts:30.5, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
+];
+let leagueWeeks = [];
+try { const s=JSON.parse(localStorage.getItem('zc_league_2026')||'null'); if(s&&s.length) leagueWeeks=s; else leagueWeeks=[...LEAGUE_HARDCODED]; } catch { leagueWeeks=[...LEAGUE_HARDCODED]; }
+function saveLeagueStorage(){ try{localStorage.setItem('zc_league_2026',JSON.stringify(leagueWeeks));}catch{} }
+
+function openDrawer(){ const d=document.getElementById('drawer'); const o=document.getElementById('drawer-overlay'); if(d&&d.style.transform==='translateX(0px)'||d&&d.style.transform==='translateX(0)'){ closeDrawer(); return; } if(d){d.style.transform='translateX(0)';} if(o){o.style.opacity='1';o.style.pointerEvents='all';} }
+function closeDrawer(){ const d=document.getElementById('drawer'); const o=document.getElementById('drawer-overlay'); if(d){d.style.transform='translateX(-100%)';} if(o){o.style.opacity='0';o.style.pointerEvents='none';} }
+
+let currentMode = 'stats';
+function switchMode(mode){
+  closeDrawer();
+  currentMode = mode;
+  document.getElementById('stats-mode').style.display = mode==='stats'?'':'none';
+  document.getElementById('league-mode').style.display = mode==='league'?'':'none';
+  const ms=document.getElementById('mode-stats'); const ml=document.getElementById('mode-league'); if(ms){ms.style.background=mode==='stats'?'#2d7d35':'transparent';ms.style.color=mode==='stats'?'#eaf4ea':'#93bf93';} if(ml){ml.style.background=mode==='league'?'#2d7d35':'transparent';ml.style.color=mode==='league'?'#eaf4ea':'#93bf93';}
+  if(mode==='league') renderLeagueDashboard();
+}
+
+function showLeagueSection(id, btn){
+  document.querySelectorAll('#league-mode .section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#league-nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='league-dashboard') renderLeagueDashboard();
+  if(id==='league-season') renderLeagueSeason();
+  if(id==='league-best8') renderLeagueBest8();
+}
+
+function togglePlayoff(){
+  const isPlayoff = document.getElementById('lg-playoff').checked;
+  document.getElementById('lg-points-card').style.display = isPlayoff?'none':'';
+}
+
+function calcTotalPts(){
+  const gh=parseFloat(document.getElementById('lg-gross-hole').value)||0;
+  const nh=parseFloat(document.getElementById('lg-net-hole').value)||0;
+  const gm=parseFloat(document.getElementById('lg-gross-match').value)||0;
+  const nm=parseFloat(document.getElementById('lg-net-match').value)||0;
+  document.getElementById('lg-total-pts').textContent=(gh+nh+gm+nm).toFixed(1);
+}
+['lg-gross-hole','lg-net-hole','lg-gross-match','lg-net-match'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input', calcTotalPts);
+  document.getElementById(id)?.addEventListener('change', calcTotalPts);
+});
+
+function saveLeagueWeek(){
+  const week=parseInt(document.getElementById('lg-week').value);
+  const date=document.getElementById('lg-date').value;
+  const isPlayoff=document.getElementById('lg-playoff').checked;
+  if(!date){showToast('Please enter a date');return;}
+  const grossScore=parseInt(document.getElementById('lg-gross-score').value)||null;
+  const netScore=parseInt(document.getElementById('lg-net-score').value)||null;
+  const grossHole=isPlayoff?null:parseFloat(document.getElementById('lg-gross-hole').value)||0;
+  const netHole=isPlayoff?null:parseFloat(document.getElementById('lg-net-hole').value)||0;
+  const grossMatch=isPlayoff?null:parseFloat(document.getElementById('lg-gross-match').value)||0;
+  const netMatch=isPlayoff?null:parseFloat(document.getElementById('lg-net-match').value)||0;
+  const totalPts=isPlayoff?null:(grossHole+netHole+grossMatch+netMatch);
+  const grossSkins=parseInt(document.getElementById('lg-gross-skins').value)||0;
+  const netSkins=parseInt(document.getElementById('lg-net-skins').value)||0;
+  const cashWon=parseFloat(document.getElementById('lg-cash-won').value)||0;
+  const netProfit=cashWon-20;
+  const w={id:Date.now(),week,date,isPlayoff,grossScore,netScore,grossHole,netHole,grossMatch,netMatch,totalPts,grossSkins,netSkins,cashWon,netProfit};
+  // replace if same week exists
+  const idx=leagueWeeks.findIndex(x=>x.week===week);
+  if(idx>=0) leagueWeeks[idx]=w; else leagueWeeks.push(w);
+  leagueWeeks.sort((a,b)=>a.week-b.week);
+  saveLeagueStorage();
+  showToast('Week '+week+' saved!');
+  clearLeagueLog();
+}
+
+function clearLeagueLog(){
+  ['lg-gross-hole','lg-net-hole','lg-gross-score','lg-net-score','lg-gross-skins','lg-net-skins','lg-cash-won'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('lg-gross-match').value='0';
+  document.getElementById('lg-net-match').value='0';
+  document.getElementById('lg-playoff').checked=false;
+  document.getElementById('lg-points-card').style.display='';
+  document.getElementById('lg-total-pts').textContent='0';
+}
+
+function renderLeagueDashboard(){
+  const reg=leagueWeeks.filter(w=>!w.isPlayoff);
+  const all=leagueWeeks;
+  const totalPts=reg.reduce((a,w)=>a+(w.totalPts||0),0);
+  const weeksPlayed=all.length;
+  const totalGrossSkins=all.reduce((a,w)=>a+w.grossSkins,0);
+  const totalNetSkins=all.reduce((a,w)=>a+w.netSkins,0);
+  const totalCash=all.reduce((a,w)=>a+w.cashWon,0);
+  const totalProfit=all.reduce((a,w)=>a+w.netProfit,0);
+  const avgPts=reg.length?(totalPts/reg.length).toFixed(1):'—';
+
+  document.getElementById('league-dash-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Season points</div><div class="metric-value">${totalPts.toFixed(1)}</div><div class="metric-sub">${reg.length} reg weeks</div></div>
+    <div class="metric"><div class="metric-label">Avg pts/week</div><div class="metric-value">${avgPts}</div><div class="metric-sub">of 38 max</div></div>
+    <div class="metric"><div class="metric-label">Gross skins</div><div class="metric-value">${totalGrossSkins}</div><div class="metric-sub">2026 season</div></div>
+    <div class="metric"><div class="metric-label">Net skins</div><div class="metric-value">${totalNetSkins}</div><div class="metric-sub">2026 season</div></div>
+    <div class="metric"><div class="metric-label">Cash won</div><div class="metric-value">$${totalCash.toFixed(0)}</div><div class="metric-sub">gross</div></div>
+    <div class="metric"><div class="metric-label">Net profit</div><div class="metric-value" style="color:${totalProfit>=0?'var(--green)':'var(--red)'}">${totalProfit>=0?'+':''}$${totalProfit.toFixed(0)}</div><div class="metric-sub">after $20 entry</div></div>
+  `;
+
+  // Best 8 tracker
+  const regScores=reg.filter(w=>w.grossScore!=null).sort((a,b)=>a.grossScore-b.grossScore);
+  const best8Weeks=regScores.slice(0,8).map(w=>w.week);
+  const weeksLeft=14-reg.length;
+  document.getElementById('league-best8-tracker').innerHTML=`
+    <div class="section-label" style="margin-bottom:12px;">Best 8 Gross tracker (weeks 1–14)</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-bottom:12px;">
+      ${Array.from({length:14},(_,i)=>{
+        const w=leagueWeeks.find(x=>x.week===i+1);
+        const cancelled=CANCELLED_WEEKS.includes(i+1);
+        const inBest8=best8Weeks.includes(i+1);
+        const bg=cancelled?'var(--red-bg)':!w?'var(--bg)':inBest8?'var(--green)':'rgba(255,255,255,0.08)';
+        const color=cancelled?'var(--red)':!w?'var(--text-3)':inBest8?'#fff':'var(--text-2)';
+        const weekColor=cancelled?'var(--red)':!w?'var(--text-3)':inBest8?'rgba(255,255,255,0.7)':'var(--text-3)';
+        const borderCol=cancelled?'var(--red)':inBest8?'var(--green)':'var(--border-mid)';
+        return `<div style="background:${bg};border-radius:8px;padding:6px 4px;text-align:center;border:1px solid ${borderCol};">
+          <div style="font-size:9px;color:${weekColor};margin-bottom:2px;">Wk ${i+1}</div>
+          <div style="font-size:14px;font-weight:600;color:${color};">${cancelled?'✕':w?w.grossScore:'—'}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:12px;color:var(--text-2);">${weeksLeft>0?weeksLeft+' weeks remaining in regular season':'All regular weeks complete'}</div>
+      <div style="font-size:12px;color:var(--text-2);">Best 8 total: <strong style="color:var(--text);">${regScores.slice(0,8).reduce((a,w)=>a+w.grossScore,0)||'—'}</strong></div>
+    </div>
+  `;
+
+  // Recent weeks
+  const recent=[...leagueWeeks].reverse().slice(0,5);
+  document.getElementById('league-recent-weeks').innerHTML='<div class="section-label" style="margin-bottom:8px;">Recent weeks</div>'+
+    (recent.length?recent.map(w=>`
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <div><div>${w.isPlayoff?'Playoff Wk '+(w.week-14):'Week '+w.week} · ${w.date}</div>
+        <div style="font-size:11px;color:var(--text-3);">${w.isPlayoff?'Playoff':'Pts: '+(w.totalPts||0)+' · '}Gross: ${w.grossScore||'—'} · Net: ${w.netScore||'—'}</div></div>
+        <div style="text-align:right;"><div style="font-weight:600;">${w.isPlayoff?'':w.totalPts!=null?w.totalPts.toFixed(1)+' pts':'—'}</div>
+        <div style="font-size:11px;color:${w.netProfit>=0?'var(--green)':'var(--red)'};">${w.netProfit>=0?'+':''}$${w.netProfit.toFixed(0)}</div></div>
+      </div>`).join(''):'<div style="color:var(--text-3);font-size:13px;text-align:center;padding:1rem;">No weeks logged yet.</div>');
+}
+
+function renderLeagueSeason(){
+  const el=document.getElementById('league-season-table');
+  if(!leagueWeeks.length){el.innerHTML='<div style="color:var(--text-3);font-size:13px;text-align:center;padding:1rem;">No weeks logged yet.</div>';return;}
+  el.innerHTML='<div class="section-label" style="margin-bottom:10px;">2026 Season — all weeks</div>'+
+    '<div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;font-size:12px;">'+
+    '<thead><tr style="border-bottom:1px solid var(--border-mid);">'+
+    '<th style="text-align:left;padding:6px 4px;color:var(--text-3);">Wk</th>'+
+    '<th style="text-align:center;padding:6px 4px;color:var(--text-3);">Date</th>'+
+    '<th style="text-align:center;padding:6px 4px;color:var(--text-3);">Gross</th>'+
+    '<th style="text-align:center;padding:6px 4px;color:var(--text-3);">Net</th>'+
+    '<th style="text-align:center;padding:6px 4px;color:var(--text-3);">Pts</th>'+
+    '<th style="text-align:center;padding:6px 4px;color:var(--text-3);">Skins</th>'+
+    '<th style="text-align:right;padding:6px 4px;color:var(--text-3);">Profit</th>'+
+    '</tr></thead><tbody>'+
+    leagueWeeks.map(w=>`<tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:7px 4px;color:var(--text-2);">${w.isPlayoff?'P'+(w.week-14):w.week}</td>
+      <td style="text-align:center;padding:7px 4px;color:var(--text-2);">${w.date.slice(5)}</td>
+      <td style="text-align:center;padding:7px 4px;font-weight:500;">${w.grossScore||'—'}</td>
+      <td style="text-align:center;padding:7px 4px;font-weight:500;">${w.netScore||'—'}</td>
+      <td style="text-align:center;padding:7px 4px;color:var(--text-2);">${w.isPlayoff?'—':w.totalPts!=null?w.totalPts.toFixed(1):'—'}</td>
+      <td style="text-align:center;padding:7px 4px;color:var(--text-2);">${w.grossSkins}G / ${w.netSkins}N</td>
+      <td style="text-align:right;padding:7px 4px;font-weight:500;color:${w.netProfit>=0?'var(--green)':'var(--red)'};">${w.netProfit>=0?'+':''}$${w.netProfit.toFixed(0)}</td>
+    </tr>`).join('')+
+    '</tbody></table></div>';
+}
+
+function renderLeagueBest8(){
+  const reg=leagueWeeks.filter(w=>!w.isPlayoff&&w.week<=14);
+  
+  // Gross best 8
+  const grossSorted=[...reg].filter(w=>w.grossScore!=null).sort((a,b)=>a.grossScore-b.grossScore);
+  const best8Gross=grossSorted.slice(0,8);
+  const grossTotal=best8Gross.reduce((a,w)=>a+w.grossScore,0);
+  document.getElementById('league-best8-gross').innerHTML=`
+    <div class="section-label" style="margin-bottom:10px;">Best 8 — Gross (weeks 1–14)</div>
+    ${best8Gross.map((w,i)=>{
+      const vp=w.grossScore-33; const vpStr=vp>0?'+'+vp:vp===0?'E':''+vp; const vpColor=vp<=0?'var(--green)':vp<=3?'var(--amber)':'var(--red)';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--text-2);">#${i+1} · Week ${w.week} · ${w.date.slice(5)}</span>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <span style="font-size:12px;font-weight:500;color:${vpColor};">${vpStr}</span>
+          <span style="font-weight:600;">${w.grossScore}</span>
+        </div>
+      </div>`;
+    }).join('')}
+    ${best8Gross.length?`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:600;"><span>Best 8 total</span><div style="display:flex;gap:16px;"><span style="color:${grossTotal-best8Gross.length*33<=0?'var(--green)':grossTotal-best8Gross.length*33<=10?'var(--amber)':'var(--red)'};font-size:12px;">${grossTotal-best8Gross.length*33>0?'+':''}${grossTotal-best8Gross.length*33===0?'E':grossTotal-best8Gross.length*33}</span><span>${grossTotal}</span></div></div>`:'<div style="color:var(--text-3);font-size:13px;padding:1rem 0 0;text-align:center;">Not enough data yet.</div>'}
+  `;
+
+  // Net best 8
+  const netSorted=[...reg].filter(w=>w.netScore!=null).sort((a,b)=>a.netScore-b.netScore);
+  const best8Net=netSorted.slice(0,8);
+  const netTotal=best8Net.reduce((a,w)=>a+w.netScore,0);
+  document.getElementById('league-best8-net').innerHTML=`
+    <div class="section-label" style="margin-bottom:10px;">Best 8 — Net (weeks 1–14)</div>
+    ${best8Net.map((w,i)=>{
+      const vp=w.netScore-33; const vpStr=vp>0?'+'+vp:vp===0?'E':''+vp; const vpColor=vp<=0?'var(--green)':vp<=3?'var(--amber)':'var(--red)';
+      return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+        <span style="color:var(--text-2);">#${i+1} · Week ${w.week} · ${w.date.slice(5)}</span>
+        <div style="display:flex;gap:16px;align-items:center;">
+          <span style="font-size:12px;font-weight:500;color:${vpColor};">${vpStr}</span>
+          <span style="font-weight:600;">${w.netScore}</span>
+        </div>
+      </div>`;
+    }).join('')}
+    ${best8Net.length?`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:600;"><span>Best 8 total</span><div style="display:flex;gap:16px;"><span style="color:${netTotal-best8Net.length*33<=0?'var(--green)':netTotal-best8Net.length*33<=10?'var(--amber)':'var(--red)'};font-size:12px;">${netTotal-best8Net.length*33>0?'+':''}${netTotal-best8Net.length*33===0?'E':netTotal-best8Net.length*33}</span><span>${netTotal}</span></div></div>`:'<div style="color:var(--text-3);font-size:13px;padding:1rem 0 0;text-align:center;">Not enough data yet.</div>'}
+  `;
+}
+
+// Wrap existing stats content in a div
 document.getElementById('round-date').value=new Date().toISOString().slice(0,10);
+
 buildHoleGrid('front-grid',0);
 buildHoleGrid('back-grid',9);
 renderDashboard();
