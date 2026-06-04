@@ -1534,10 +1534,19 @@ function saveGhin(v){try{localStorage.setItem('zc_ghin',v);}catch{}}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
 // Prevent iOS double-tap zoom on PIN buttons
+document.addEventListener('touchstart', function(e) {
+  const overlay = document.getElementById('pin-overlay');
+  if(!overlay || overlay.style.display === 'none') return;
+  if(e.touches.length > 1) e.preventDefault();
+}, { passive: false });
+
+let lastTouchEnd = 0;
 document.addEventListener('touchend', function(e) {
   const overlay = document.getElementById('pin-overlay');
   if(!overlay || overlay.style.display === 'none') return;
-  e.preventDefault();
+  const now = Date.now();
+  if(now - lastTouchEnd < 300) e.preventDefault();
+  lastTouchEnd = now;
 }, { passive: false });
 
 // PIN keyboard support
