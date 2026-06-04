@@ -10,16 +10,13 @@
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f7f6f2; --surface: #ffffff; --border: rgba(0,0,0,0.1); --border-mid: rgba(0,0,0,0.18);
-    --text: #1a1a18; --text-2: #5a5a55; --text-3: #9a9a93;
-    --green: #1D9E75; --green-bg: #E1F5EE; --green-text: #085041;
-    --amber: #BA7517; --amber-bg: #FAEEDA; --amber-text: #633806;
-    --red: #E24B4A; --red-bg: #FCEBEB; --red-text: #501313;
-    --blue: #185FA5; --blue-light: #B5D4F4; --blue-mid: #378ADD;
+    --bg: #1e3a20; --surface: #253f27; --border: rgba(255,255,255,0.1); --border-mid: rgba(255,255,255,0.18);
+    --text: #eaf4ea; --text-2: #93bf93; --text-3: #6a996a;
+    --green: #2d7d35; --green-bg: #1e5225; --green-text: #c8f0d0;
+    --amber: #c9a227; --amber-bg: #3d3010; --amber-text: #f5d87a;
+    --red: #e05050; --red-bg: #4a1a1a; --red-text: #f5c0c0;
+    --blue: #2d7d35; --blue-light: #1e5225; --blue-mid: #3da345;
     --radius: 8px; --radius-lg: 12px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --bg:#1a1a18; --surface:#242422; --border:rgba(255,255,255,0.1); --border-mid:rgba(255,255,255,0.18); --text:#f0efe9; --text-2:#a8a89f; --text-3:#68685f; --green-bg:#04342C; --green-text:#9FE1CB; --amber-bg:#412402; --amber-text:#FAC775; --red-bg:#501313; --red-text:#F7C1C1; }
   }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
   .container { max-width: 720px; margin: 0 auto; padding: 24px 16px; }
@@ -132,7 +129,7 @@
 </style>
 </head>
 <body>
-<div id="pin-overlay" style="position:fixed;inset:0;background:#f7f6f2;display:flex;align-items:center;justify-content:center;z-index:99999;">
+<div id="pin-overlay" style="position:fixed;inset:0;background:#1e3a20;display:flex;align-items:center;justify-content:center;z-index:99999;">
   <div style="text-align:center;padding:2rem 1rem;width:100%;max-width:320px;">
     <div style="font-size:24px;font-weight:600;color:#1a1a18;margin-bottom:6px;">⛳ Zintel Creek</div>
     <div style="font-size:14px;color:#9a9a93;margin-bottom:32px;">Enter your PIN to continue</div>
