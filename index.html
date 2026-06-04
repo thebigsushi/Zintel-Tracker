@@ -675,7 +675,7 @@ function buildRound(raw) {
   const back = hasBack ? h.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
   const total = isFullRound ? front+back : null;
   let birdies=0,parOrBetter=0,doubles=0,holesPlayed=0,eagles=0,hios=0;
-  h.forEach((s,i)=>{ if(s==null)return; holesPlayed++; const d=s-PARS[i]; if(s===1)hios++; else if(d<=-2)eagles++; else if(d===-1)birdies++; if(d<=0)parOrBetter++; if(d>=2)doubles++; });
+  h.forEach((s,i)=>{ if(s==null)return; const sc=Number(s); holesPlayed++; const d=sc-PARS[i]; if(sc===1)hios++; else if(d<=-2)eagles++; else if(d===-1)birdies++; if(d<=0)parOrBetter++; if(d>=2)doubles++; });
   const diff = isFullRound ? parseFloat(((total-TEES[tee].rating)*113/TEES[tee].slope).toFixed(2)) : null;
   const rid = parseInt(date.replace(/-/g,'')) * 10000 + Math.floor(Math.random()*9999);
   return { id: rid, date, tee, holes:h, front, back, total, isFullRound, hasFront, hasBack, diff, birdies, parOrBetter, doubles, holesPlayed, eagles, hios };
@@ -796,7 +796,7 @@ function recalcRound(r) {
   r.back = r.hasBack ? h.slice(9,18).filter(v=>v!=null).reduce((a,b)=>a+b,0) : null;
   r.total = r.isFullRound ? r.front+r.back : null;
   r.birdies=0; r.parOrBetter=0; r.doubles=0; r.holesPlayed=0; r.eagles=0; r.hios=0;
-  h.forEach((s,i)=>{ if(s==null)return; r.holesPlayed++; const d=s-PARS[i]; if(s===1)r.hios++; else if(d<=-2)r.eagles++; else if(d===-1)r.birdies++; if(d<=0)r.parOrBetter++; if(d>=2)r.doubles++; });
+  h.forEach((s,i)=>{ if(s==null)return; const sc=Number(s); r.holesPlayed++; const d=sc-PARS[i]; if(sc===1)r.hios++; else if(d<=-2)r.eagles++; else if(d===-1)r.birdies++; if(d<=0)r.parOrBetter++; if(d>=2)r.doubles++; });
   r.diff = r.isFullRound ? parseFloat(((r.total-TEES[r.tee].rating)*113/TEES[r.tee].slope).toFixed(2)) : null;
   return r;
 }
