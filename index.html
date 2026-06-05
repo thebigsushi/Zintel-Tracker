@@ -2158,7 +2158,7 @@ switchMode = function(mode){
   const cm=document.getElementById('mode-courses'); if(cm){cm.style.background=mode==='courses'?'#2d7d35':'transparent';cm.style.color=mode==='courses'?'#eaf4ea':'#93bf93';}
   if(mode==='stats') renderDashboard();
   else if(mode==='league') renderLeagueDashboard();
-  else if(mode==='courses') renderCoursesList();
+  else if(mode==='courses') renderCoursesDash();
 };
 
 // Wrap existing stats content in a div
