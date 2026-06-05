@@ -6,6 +6,8 @@
 <title>Zintel Creek Golf Tracker</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⛳</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -168,6 +170,9 @@
   </div>
   <div id="mode-league" onclick="switchMode('league')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;color:#93bf93;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">
     &#127942; Thursday League
+  </div>
+  <div id="mode-courses" onclick="switchMode('courses')" style="display:flex;align-items:center;gap:12px;padding:14px 20px;font-size:14px;color:#93bf93;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.06);">
+    &#127757; Course Tracker
   </div>
 </div>
 <div class="container" id="main-container" style="display:none;">
@@ -398,6 +403,33 @@
     <div id="league-best8" class="section">
       <div class="card" id="league-best8-gross"></div>
       <div class="card" id="league-best8-net"></div>
+    </div>
+  </div>
+
+  <!-- COURSES MODE -->
+  <div id="courses-mode" style="display:none;">
+    <div class="header" style="display:flex;align-items:center;gap:10px;">
+      <button onclick="openDrawer()" aria-label="Menu" style="font-size:22px;line-height:1;color:#93bf93;background:none;border:none;cursor:pointer;padding:0;flex-shrink:0;">&#9776;</button>
+      <div><h1>&#127757; Course Tracker</h1><p style="font-size:13px;color:var(--text-2);margin-top:3px;">All courses played</p></div>
+    </div>
+    <div class="nav" id="courses-nav">
+      <button class="active" onclick="showCoursesSection('courses-dash',this)"><i class="ti ti-chart-bar"></i> Dashboard</button>
+      <button onclick="showCoursesSection('courses-list',this)"><i class="ti ti-list"></i> List</button>
+      <button onclick="showCoursesSection('courses-map',this)"><i class="ti ti-map-pin"></i> Map</button>
+    </div>
+    <div id="courses-dash" class="section active">
+      <div class="metric-grid" id="courses-dash-metrics"></div>
+      <div class="card" id="courses-dash-top"></div>
+      <div class="card" id="courses-dash-states"></div>
+    </div>
+    <div id="courses-list" class="section">
+      <div class="card" id="courses-list-content"></div>
+    </div>
+    <div id="courses-map" class="section">
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div id="courses-map-container" style="height:500px;width:100%;border-radius:12px;"></div>
+      </div>
+      <div class="card" id="courses-map-list" style="margin-top:0;"></div>
     </div>
   </div>
 
@@ -1690,6 +1722,7 @@ try {
     document.getElementById('pin-overlay').style.display='none';
     document.getElementById('main-container').style.display='block';
     loadFromDB();
+    loadLeagueFromDB();
   }
 } catch {}
 
@@ -1706,21 +1739,64 @@ const LEAGUE_HARDCODED = [
   {id:202605140001, week:5, date:'2026-05-14', isPlayoff:false, grossScore:40, netScore:35, grossHole:7.5, netHole:6.5, grossMatch:10, netMatch:10, totalPts:34, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
   {id:202605210001, week:6, date:'2026-05-21', isPlayoff:false, grossScore:37, netScore:34, grossHole:5.5, netHole:5, grossMatch:10, netMatch:10, totalPts:30.5, grossSkins:0, netSkins:0, cashWon:0, netProfit:-20},
 ];
-let leagueWeeks = [];
-try { const s=JSON.parse(localStorage.getItem('zc_league_2026')||'null'); if(s&&s.length) leagueWeeks=s; else leagueWeeks=[...LEAGUE_HARDCODED]; } catch { leagueWeeks=[...LEAGUE_HARDCODED]; }
-function saveLeagueStorage(){ try{localStorage.setItem('zc_league_2026',JSON.stringify(leagueWeeks));}catch{} }
+let leagueWeeks = [...LEAGUE_HARDCODED];
+let leagueDbLoaded = false;
+
+function leagueWeekToRow(w) {
+  return { id:w.id, week:w.week, date:w.date, is_playoff:w.isPlayoff||false, gross_score:w.grossScore||null, net_score:w.netScore||null, gross_hole:w.grossHole||0, net_hole:w.netHole||0, gross_match:w.grossMatch||0, net_match:w.netMatch||0, total_pts:w.totalPts||null, gross_skins:w.grossSkins||0, net_skins:w.netSkins||0, cash_won:w.cashWon||0, net_profit:w.netProfit||0 };
+}
+
+function rowToLeagueWeek(row) {
+  return { id:row.id, week:row.week, date:row.date, isPlayoff:row.is_playoff||false, grossScore:row.gross_score, netScore:row.net_score, grossHole:Number(row.gross_hole)||0, netHole:Number(row.net_hole)||0, grossMatch:Number(row.gross_match)||0, netMatch:Number(row.net_match)||0, totalPts:row.total_pts!=null?Number(row.total_pts):null, grossSkins:row.gross_skins||0, netSkins:row.net_skins||0, cashWon:Number(row.cash_won)||0, netProfit:Number(row.net_profit)||0 };
+}
+
+async function loadLeagueFromDB() {
+  try {
+    const res = await fetch(SUPABASE_URL+'/rest/v1/league_weeks?select=*&order=week.asc', { headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY} });
+    if(!res.ok) throw new Error(await res.text());
+    const rows = await res.json();
+    if(rows && rows.length > 0) {
+      leagueWeeks = rows.map(rowToLeagueWeek);
+      leagueDbLoaded = true;
+    } else {
+      await seedLeagueDB();
+    }
+  } catch(e) { console.error('League DB load failed:', e); }
+}
+
+async function seedLeagueDB() {
+  try {
+    const rows = LEAGUE_HARDCODED.map(leagueWeekToRow);
+    const res = await fetch(SUPABASE_URL+'/rest/v1/league_weeks', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'resolution=ignore-duplicates,return=minimal'}, body:JSON.stringify(rows) });
+    if(!res.ok) throw new Error(await res.text());
+    leagueWeeks = [...LEAGUE_HARDCODED];
+    leagueDbLoaded = true;
+    showToast('League data seeded! ✅');
+  } catch(e) { console.error('League seed failed:', e); }
+}
+
+async function saveLeagueStorage(week) {
+  if(leagueDbLoaded && week) {
+    try {
+      await fetch(SUPABASE_URL+'/rest/v1/league_weeks', { method:'POST', headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY,'Prefer':'resolution=merge-duplicates,return=minimal'}, body:JSON.stringify(leagueWeekToRow(week)) });
+    } catch(e) { console.error('League save failed:', e); }
+  }
+}
+
+async function deleteLeagueFromDB(id) {
+  if(leagueDbLoaded) {
+    try {
+      await fetch(SUPABASE_URL+'/rest/v1/league_weeks?id=eq.'+id, { method:'DELETE', headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY} });
+    } catch(e) { console.error('League delete failed:', e); }
+  }
+}
 
 function openDrawer(){ const d=document.getElementById('drawer'); const o=document.getElementById('drawer-overlay'); if(d&&d.style.transform==='translateX(0px)'||d&&d.style.transform==='translateX(0)'){ closeDrawer(); return; } if(d){d.style.transform='translateX(0)';} if(o){o.style.opacity='1';o.style.pointerEvents='all';} }
 function closeDrawer(){ const d=document.getElementById('drawer'); const o=document.getElementById('drawer-overlay'); if(d){d.style.transform='translateX(-100%)';} if(o){o.style.opacity='0';o.style.pointerEvents='none';} }
 
 let currentMode = 'stats';
 function switchMode(mode){
-  closeDrawer();
-  currentMode = mode;
-  document.getElementById('stats-mode').style.display = mode==='stats'?'':'none';
-  document.getElementById('league-mode').style.display = mode==='league'?'':'none';
-  const ms=document.getElementById('mode-stats'); const ml=document.getElementById('mode-league'); if(ms){ms.style.background=mode==='stats'?'#2d7d35':'transparent';ms.style.color=mode==='stats'?'#eaf4ea':'#93bf93';} if(ml){ml.style.background=mode==='league'?'#2d7d35':'transparent';ml.style.color=mode==='league'?'#eaf4ea':'#93bf93';}
-  if(mode==='league') renderLeagueDashboard();
+  // full version defined below after courses JS loads
 }
 
 function showLeagueSection(id, btn){
@@ -1771,7 +1847,7 @@ function saveLeagueWeek(){
   const idx=leagueWeeks.findIndex(x=>x.week===week);
   if(idx>=0) leagueWeeks[idx]=w; else leagueWeeks.push(w);
   leagueWeeks.sort((a,b)=>a.week-b.week);
-  saveLeagueStorage();
+  saveLeagueStorage(w);
   showToast('Week '+week+' saved!');
   clearLeagueLog();
 }
@@ -1911,6 +1987,180 @@ function renderLeagueBest8(){
     ${best8Net.length?`<div style="display:flex;justify-content:space-between;padding:8px 0;font-size:13px;font-weight:600;"><span>Best 8 total</span><div style="display:flex;gap:16px;"><span style="color:${netTotal-best8Net.length*33<=0?'var(--green)':netTotal-best8Net.length*33<=10?'var(--amber)':'var(--red)'};font-size:12px;">${netTotal-best8Net.length*33>0?'+':''}${netTotal-best8Net.length*33===0?'E':netTotal-best8Net.length*33}</span><span>${netTotal}</span></div></div>`:'<div style="color:var(--text-3);font-size:13px;padding:1rem 0 0;text-align:center;">Not enough data yet.</div>'}
   `;
 }
+
+
+// ========== COURSES MODE ==========
+const COURSES = [
+  {name:'Zintel Creek',city:'Kennewick',state:'WA',par:66,tees:'White',yardage:4650,rating:63.5,slope:115,stars:3.5,year:2019,lat:46.2112,lng:-119.1372,home:true},
+  {name:'Canyon Lakes',city:'Kennewick',state:'WA',par:72,tees:'White',yardage:6211,rating:70.3,slope:127,stars:3.5,year:2004,lat:46.2285,lng:-119.1847},
+  {name:'Columbia Point',city:'Richland',state:'WA',par:72,tees:'Blue',yardage:5965,rating:69.0,slope:126,stars:3,year:2005,lat:46.2799,lng:-119.2752},
+  {name:'Sun Willows',city:'Pasco',state:'WA',par:72,tees:'White',yardage:6327,rating:70.5,slope:119,stars:3,year:2005,lat:46.2543,lng:-119.0968},
+  {name:'Horn Rapids',city:'Richland',state:'WA',par:72,tees:'White',yardage:6267,rating:71.0,slope:133,stars:2,year:2014,lat:46.3221,lng:-119.2614},
+  {name:'Meadow Springs',city:'Richland',state:'WA',par:72,tees:'Blue',yardage:6526,rating:72.0,slope:133,stars:4,year:2022,lat:46.2608,lng:-119.3124},
+  {name:'West Richland',city:'West Richland',state:'WA',par:72,tees:'White',yardage:5551,rating:66.4,slope:111,stars:1,year:2000,lat:46.3038,lng:-119.3614},
+  {name:'Columbia Park',city:'Kennewick',state:'WA',par:54,tees:"Men's",yardage:2447,rating:null,slope:null,stars:1.5,year:1998,lat:46.2156,lng:-119.1021},
+  {name:'Pasco Golf Land',city:'Pasco',state:'WA',par:36,tees:"Men's",yardage:2185,rating:null,slope:null,stars:1.5,year:1999,lat:46.2396,lng:-119.1005},
+  {name:'Apple Tree',city:'Yakima',state:'WA',par:72,tees:'White',yardage:6295,rating:70.8,slope:134,stars:3.5,year:2021,lat:46.5987,lng:-120.5059},
+  {name:'Wine Valley',city:'Walla Walla',state:'WA',par:72,tees:'Blue',yardage:6359,rating:70.1,slope:124,stars:4,year:2021,lat:46.0646,lng:-118.3430},
+  {name:"Veteran's Memorial",city:'Walla Walla',state:'WA',par:72,tees:'White',yardage:6278,rating:69.7,slope:117,stars:3,year:2022,lat:46.0821,lng:-118.3012},
+  {name:'Bear Dance',city:'Larkspur',state:'CO',par:72,tees:'Blue',yardage:6567,rating:71.1,slope:137,stars:4.5,year:2016,lat:39.2329,lng:-104.8663},
+  {name:'Blackstone Country Club',city:'Aurora',state:'CO',par:72,tees:"Member's",yardage:6740,rating:71.9,slope:139,stars:5,year:2016,lat:39.6883,lng:-104.7441},
+  {name:'Red Hawk Ridge',city:'Castle Rock',state:'CO',par:72,tees:'Blue',yardage:5867,rating:66.9,slope:121,stars:4,year:2015,lat:39.3722,lng:-104.8561},
+  {name:'Springhill Golf Course',city:'Aurora',state:'CO',par:64,tees:'White',yardage:4949,rating:62.4,slope:105,stars:2.5,year:2014,lat:39.7294,lng:-104.7563},
+  {name:'Fitzsimmons Golf Course',city:'Aurora',state:'CO',par:71,tees:'White',yardage:5986,rating:67.8,slope:122,stars:3,year:2014,lat:39.7214,lng:-104.7621},
+  {name:'Patty Jewett Golf Course',city:'Colorado Springs',state:'CO',par:72,tees:'White',yardage:6183,rating:71.1,slope:128,stars:2.5,year:2016,lat:38.8673,lng:-104.8075},
+  {name:'Valley Hi Golf Course',city:'Colorado Springs',state:'CO',par:72,tees:'Blue',yardage:6329,rating:69.2,slope:123,stars:2.5,year:2016,lat:38.8219,lng:-104.8394},
+  {name:'Flatiron Golf Course',city:'Boulder',state:'CO',par:70,tees:'White',yardage:6020,rating:67.6,slope:124,stars:3,year:2017,lat:40.0274,lng:-105.2519},
+  {name:'Terra Lago North',city:'Palm Springs',state:'CA',par:72,tees:'White',yardage:5830,rating:69.1,slope:125,stars:4.5,year:2023,lat:33.7242,lng:-116.2219},
+  {name:'Desert Willow Mountain View',city:'Palm Springs',state:'CA',par:72,tees:'White',yardage:6128,rating:69.7,slope:125,stars:3,year:2023,lat:33.7089,lng:-116.2184},
+  {name:'Ko Olina Golf Club',city:'Kapolei',state:'HI',par:72,tees:'White',yardage:6432,rating:72.1,slope:129,stars:5,year:2024,lat:21.3369,lng:-158.1239},
+  {name:'Wildhorse Golf Course',city:'Pendleton',state:'OR',par:72,tees:'White',yardage:6150,rating:69.9,slope:125,stars:4,year:2024,lat:45.6721,lng:-118.7886},
+  {name:'Lake Buena Vista',city:'Orlando',state:'FL',par:72,tees:'White',yardage:6389,rating:70.2,slope:129,stars:4.5,year:2025,lat:28.3712,lng:-81.5158},
+  {name:'Three Lakes Golf Course',city:'Wenatchee',state:'WA',par:69,tees:'White',yardage:5086,rating:64.8,slope:111,stars:3,year:2025,lat:47.4235,lng:-120.3103},
+  {name:'Royal Hawaiian Golf Course',city:'Kailua',state:'HI',par:72,tees:'White',yardage:5541,rating:68.4,slope:129,stars:3,year:2026,lat:21.3791,lng:-157.7382},
+];
+
+function starsHTML(n){
+  let s='';
+  for(let i=1;i<=5;i++){
+    if(i<=Math.floor(n)) s+='<span style="color:#c9a227;">★</span>';
+    else if(i===Math.ceil(n)&&n%1>=0.5) s+='<span style="color:#c9a227;">½</span>';
+    else s+='<span style="color:var(--border-mid);">★</span>';
+  }
+  return s;
+}
+
+function showCoursesSection(id, btn){
+  document.querySelectorAll('#courses-mode .section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('#courses-nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='courses-dash') renderCoursesDash();
+  if(id==='courses-list') renderCoursesList();
+  if(id==='courses-map') renderCoursesMap();
+}
+
+
+function renderCoursesDash(){
+  const total = COURSES.length;
+  const states = [...new Set(COURSES.map(c=>c.state))].sort();
+  const stateCount = states.length;
+  const avgRating = (COURSES.reduce((a,c)=>a+c.stars,0)/total).toFixed(1);
+  const topRated = [...COURSES].sort((a,b)=>b.stars-a.stars).slice(0,3);
+  const years = [...new Set(COURSES.map(c=>c.year))].sort((a,b)=>b-a);
+  const newest = COURSES.filter(c=>c.year===years[0]);
+  const highestRated = [...COURSES].filter(c=>c.rating).sort((a,b)=>b.rating-a.rating)[0];
+  const longestYds = [...COURSES].sort((a,b)=>b.yardage-a.yardage)[0];
+
+  document.getElementById('courses-dash-metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">Courses played</div><div class="metric-value">${total}</div><div class="metric-sub">all time</div></div>
+    <div class="metric"><div class="metric-label">States played</div><div class="metric-value">${stateCount}</div><div class="metric-sub">${states.join(', ')}</div></div>
+    <div class="metric"><div class="metric-label">Avg rating</div><div class="metric-value">${avgRating}</div><div class="metric-sub">out of 5 stars</div></div>
+    <div class="metric"><div class="metric-label">Years active</div><div class="metric-value">${years.length}</div><div class="metric-sub">${years[years.length-1]}–${years[0]}</div></div>
+    <div class="metric"><div class="metric-label">Longest course</div><div class="metric-value">${longestYds.yardage.toLocaleString()}</div><div class="metric-sub">${longestYds.name}</div></div>
+    <div class="metric"><div class="metric-label">Highest rated</div><div class="metric-value">${highestRated.rating}</div><div class="metric-sub">${highestRated.name}</div></div>
+  `;
+
+  document.getElementById('courses-dash-top').innerHTML=`
+    <div class="section-label" style="margin-bottom:10px;">Top rated courses</div>
+    ${topRated.map((c,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <div>
+        <div style="font-weight:500;">${i+1}. ${c.name}${c.home?' <span style="font-size:10px;background:var(--green);color:#fff;padding:1px 6px;border-radius:8px;">Home</span>':''}</div>
+        <div style="font-size:11px;color:var(--text-3);">${c.city}, ${c.state} · ${c.year}</div>
+      </div>
+      <div style="font-size:14px;">${starsHTML(c.stars)}</div>
+    </div>`).join('')}
+  `;
+
+  // Courses by state
+  const byState = {};
+  COURSES.forEach(c=>{ if(!byState[c.state]) byState[c.state]=[]; byState[c.state].push(c); });
+  const stateSorted = Object.entries(byState).sort((a,b)=>b[1].length-a[1].length);
+  document.getElementById('courses-dash-states').innerHTML=`
+    <div class="section-label" style="margin-bottom:10px;">Courses by state</div>
+    ${stateSorted.map(([state,courses])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+      <span style="color:var(--text-2);">${state}</span>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="height:6px;background:var(--green);border-radius:3px;width:${courses.length*20}px;max-width:120px;"></div>
+        <span style="font-weight:600;min-width:12px;text-align:right;">${courses.length}</span>
+      </div>
+    </div>`).join('')}
+  `;
+}
+
+function renderCoursesList(){
+  const sorted=[...COURSES].sort((a,b)=>b.year-a.year);
+  let currentYear=null;
+  const el=document.getElementById('courses-list-content');
+  el.innerHTML='<div style="font-size:12px;color:var(--text-3);margin-bottom:12px;">' + COURSES.length + ' courses played</div>' +
+    sorted.map(c=>{
+      let yearHeader='';
+      if(c.year!==currentYear){ currentYear=c.year; yearHeader=`<div style="font-size:11px;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:0.06em;padding:10px 0 6px;border-top:1px solid var(--border-mid);margin-top:4px;">${c.year}</div>`; }
+      const ratingStr=c.rating?`${c.rating}/${c.slope}`:'N/A';
+      return `${yearHeader}<div style="padding:10px 0;border-bottom:1px solid var(--border);">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:14px;font-weight:500;color:var(--text);">${c.name}${c.home?' <span style="font-size:10px;background:var(--green);color:#fff;padding:1px 6px;border-radius:8px;">Home</span>':''}</div>
+            <div style="font-size:12px;color:var(--text-2);margin-top:2px;">${c.city}, ${c.state}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;margin-left:12px;">
+            <div style="font-size:13px;">${starsHTML(c.stars)}</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;color:var(--text-3);flex-wrap:wrap;">
+          <span>Par ${c.par}</span>
+          <span>${c.tees} · ${c.yardage.toLocaleString()} yds</span>
+          <span>Rating/Slope: ${ratingStr}</span>
+        </div>
+      </div>`;
+    }).join('');
+}
+
+let mapInstance = null;
+function renderCoursesMap(){
+  const container = document.getElementById('courses-map-container');
+  if(!container) return;
+  if(typeof L === 'undefined'){ container.innerHTML='<div style="padding:2rem;text-align:center;color:var(--text-2);">Map unavailable — check your internet connection.</div>'; return; }
+  setTimeout(()=>{
+    if(mapInstance){ mapInstance.remove(); mapInstance=null; }
+    container.style.height='500px';
+    mapInstance = L.map('courses-map-container').setView([39.5, -105], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(mapInstance);
+
+    const greenIcon = L.divIcon({className:'',html:'<div style="width:14px;height:14px;background:#2d7d35;border:2px solid #eaf4ea;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+    const goldIcon = L.divIcon({className:'',html:'<div style="width:16px;height:16px;background:#c9a227;border:2px solid #eaf4ea;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.4);"></div>',iconSize:[16,16],iconAnchor:[8,8]});
+
+    COURSES.forEach(c=>{
+      const marker = L.marker([c.lat,c.lng],{icon:c.home?goldIcon:greenIcon}).addTo(mapInstance);
+      marker.bindPopup(`<strong>${c.name}</strong><br>${c.city}, ${c.state}<br>Par ${c.par} · ${c.tees} · ${c.yardage.toLocaleString()} yds<br>⭐ ${c.stars}/5 · ${c.year}`);
+    });
+
+    setTimeout(()=>mapInstance.invalidateSize(), 200);
+
+    // Map legend list
+    const sorted=[...COURSES].sort((a,b)=>b.year-a.year);
+    document.getElementById('courses-map-list').innerHTML=
+      '<div class="section-label" style="margin-bottom:10px;">All courses</div>'+
+      sorted.map(c=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span style="color:var(--text-2);">${c.name} · ${c.city}, ${c.state}</span>
+        <span style="color:var(--text-3);">${c.year}</span>
+      </div>`).join('');
+  }, 300);
+}
+
+// Update switchMode to handle courses
+switchMode = function(mode){
+  closeDrawer();
+  document.getElementById('stats-mode').style.display = mode==='stats'?'block':'none';
+  document.getElementById('league-mode').style.display = mode==='league'?'block':'none';
+  document.getElementById('courses-mode').style.display = mode==='courses'?'block':'none';
+  const ms=document.getElementById('mode-stats'); if(ms){ms.style.background=mode==='stats'?'#2d7d35':'transparent';ms.style.color=mode==='stats'?'#eaf4ea':'#93bf93';}
+  const ml=document.getElementById('mode-league'); if(ml){ml.style.background=mode==='league'?'#2d7d35':'transparent';ml.style.color=mode==='league'?'#eaf4ea':'#93bf93';}
+  const cm=document.getElementById('mode-courses'); if(cm){cm.style.background=mode==='courses'?'#2d7d35':'transparent';cm.style.color=mode==='courses'?'#eaf4ea':'#93bf93';}
+  if(mode==='stats') renderDashboard();
+  else if(mode==='league') renderLeagueDashboard();
+  else if(mode==='courses') renderCoursesList();
+};
 
 // Wrap existing stats content in a div
 document.getElementById('round-date').value=new Date().toISOString().slice(0,10);
