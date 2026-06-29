@@ -353,10 +353,11 @@
       <div class="card">
         <div class="section-label" style="margin-bottom:12px;">Week details</div>
         <div class="form-row"><label>Week</label>
-          <select id="lg-week"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11</option><option value="12">Week 12</option><option value="13">Week 13</option><option value="14">Week 14</option><option value="15">Playoff Week 1</option><option value="16">Playoff Week 2</option><option value="17">Playoff Week 3</option></select>
+          <select id="lg-week" onchange="checkDoublePoints()"><option value="1">Week 1</option><option value="2">Week 2</option><option value="3">Week 3</option><option value="4">Week 4</option><option value="5">Week 5</option><option value="6">Week 6</option><option value="7">Week 7</option><option value="8">Week 8</option><option value="9">Week 9</option><option value="10">Week 10</option><option value="11">Week 11 (2x points)</option><option value="12">Week 12 (2x points)</option><option value="13">Week 13 (2x points)</option><option value="14">Week 14 (2x points)</option><option value="15">Playoff Week 1</option><option value="16">Playoff Week 2</option><option value="17">Playoff Week 3</option></select>
         </div>
         <div class="form-row"><label>Date</label><input type="date" id="lg-date" /></div>
         <div class="form-row"><label>Playoff</label><input type="checkbox" id="lg-playoff" style="width:18px;height:18px;" onchange="togglePlayoff()" /></div>
+        <div id="lg-double-pts-note" style="display:none;background:var(--amber-bg);color:var(--amber-text);padding:8px 12px;border-radius:8px;font-size:12px;margin-top:6px;">⚡ Double points week — hole points max 18, match points 20 for a win, 10 for a split</div>
       </div>
       <div class="card" id="lg-points-card">
         <div class="section-label" style="margin-bottom:12px;">Points</div>
@@ -1813,6 +1814,12 @@ function togglePlayoff(){
   document.getElementById('lg-points-card').style.display = isPlayoff?'none':'';
 }
 
+function checkDoublePoints(){
+  const week = parseInt(document.getElementById('lg-week').value);
+  const note = document.getElementById('lg-double-pts-note');
+  if(note) note.style.display = (week>=11 && week<=14) ? 'block' : 'none';
+}
+
 function calcTotalPts(){
   const gh=parseFloat(document.getElementById('lg-gross-hole').value)||0;
   const nh=parseFloat(document.getElementById('lg-net-hole').value)||0;
@@ -1934,7 +1941,7 @@ function renderLeagueSeason(){
     '<th style="text-align:right;padding:6px 4px;color:var(--text-3);">Profit</th>'+
     '</tr></thead><tbody>'+
     leagueWeeks.map(w=>`<tr style="border-bottom:1px solid var(--border);">
-      <td style="padding:7px 4px;color:var(--text-2);">${w.isPlayoff?'P'+(w.week-14):w.week}</td>
+      <td style="padding:7px 4px;color:var(--text-2);">${w.isPlayoff?'P'+(w.week-14):w.week}${(w.week>=11&&w.week<=14&&!w.isPlayoff)?' <span style="font-size:9px;background:var(--amber);color:#3d3010;padding:1px 4px;border-radius:6px;font-weight:600;">2x</span>':''}</td>
       <td style="text-align:center;padding:7px 4px;color:var(--text-2);">${w.date.slice(5)}</td>
       <td style="text-align:center;padding:7px 4px;font-weight:500;">${w.grossScore||'—'}</td>
       <td style="text-align:center;padding:7px 4px;font-weight:500;">${w.netScore||'—'}</td>
